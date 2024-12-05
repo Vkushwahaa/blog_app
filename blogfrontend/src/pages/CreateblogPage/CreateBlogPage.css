@@ -1,0 +1,58 @@
+body {
+  margin-top: 80px;
+}
+
+.container {
+  max-width: 800px; 
+}
+
+.card {
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+h1 {
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+form label {
+  font-weight: 600;
+}
+
+button {
+  background-color: #007bff;
+  color: white;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+.upload-image-container {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.upload-placeholder {
+  background-color: #f8f9fa;
+  color: #6c757d;
+  height: 400px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
+@media (max-width: 768px) {
+  .container {
+    padding: 10px;
+  }
+
+  .card {
+    margin-top: 30px;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+}

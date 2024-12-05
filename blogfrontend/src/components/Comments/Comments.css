@@ -1,0 +1,29 @@
+.comment-section {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.add-comment textarea {
+  resize: none;
+  border-radius: 8px;
+}
+
+.comment-card {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: #fff;
+}
+
+.author-name {
+  font-size: 1rem;
+  color: #333;
+}
+
+.comment-body {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.comment-card button {
+  font-size: 0.85rem;
+}

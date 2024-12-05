@@ -1,0 +1,29 @@
+.bio-bio {
+  font-size: 17px;
+  word-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+.bio-user {
+  font-size: 40px;
+}
+@media (max-width: 500px) {
+  .bio-image {
+    /* Add styles for large screens here */
+    width: 80px;
+    height: 80px;
+  }
+  .bio-user {
+    font-size: 20px;
+  }
+
+  .bio-bio {
+    font-size: 10px;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+  }
+}
