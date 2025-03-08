@@ -9,20 +9,26 @@ import "./SinglePostPage.css";
 const SinglePostPage = () => {
   const { id } = useParams();
   const { post, getPost, author, getAuthor } = useContext(AppContext);
-  useEffect(() => {
-    const fetchAuthor = async () => {
-      if (post?.author_id && (!author || author.id !== post.author_id)) {
-        await getAuthor(parseInt(post.author_id));
-      }
-    };
-    fetchAuthor();
-  }, [post, author, getAuthor]);
 
   useEffect(() => {
     if (id) {
       getPost(id);
     }
   }, [id, getPost]);
+
+  useEffect(() => {
+    if (post?.author_id && (!author || author.id !== post.author_id)) {
+      getAuthor(parseInt(post.author_id));
+    }
+  }, [post, author, getAuthor]);
+
+  const authorImg = author?.img
+    ? `https://localhost-blog.onrender.com${author.img.startsWith("/") ? author.img : "/" + author.img}`
+    : "https://localhost-blog.onrender.com/media/author_images/default.jpg";
+
+  const postImg = post?.img?.startsWith("http")
+    ? post.img
+    : `https://localhost-blog.onrender.com${post.img?.startsWith("/") ? post.img : "/" + post.img}`;
 
   return (
     <div className="container mt-5">
@@ -32,23 +38,18 @@ const SinglePostPage = () => {
             <div className="author-info d-flex align-items-center mb-4">
               <div className="author-avatar">
                 <img
-                  src={
-                    author.img
-                      ? `https://localhost-blog.onrender.com/${author.img}`
-                      : "https://localhost-blog.onrender.com/media/author_images/default.jpg"
-                  }
+                  src={authorImg}
                   alt={author.name}
                   className="rounded-circle"
                   style={{ width: "60px", height: "60px", objectFit: "cover" }}
                 />
               </div>
-              {console.log("ppp", author)}
               <div className="author-details ms-3">
                 <Link
                   className="text-decoration-none"
                   to={`/userpage/${author.id}`}
                 >
-                  <h2 className="mb-0">{author.user}</h2>
+                  <h2 className="mb-0">{author.name}</h2>
                 </Link>
               </div>
             </div>
@@ -57,7 +58,7 @@ const SinglePostPage = () => {
           {post.img && (
             <div className="post-image mb-4">
               <img
-                src={post.img}
+                src={postImg}
                 alt="Featured"
                 className="w-100 img-fluid rounded"
                 style={{ maxHeight: "400px", objectFit: "cover" }}
