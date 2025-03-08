@@ -1,12 +1,16 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import AuthContext from "../../contextApi/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
-import "./login.css"; 
+import { FaEye, FaEyeSlash } from "react-icons/fa"; // Import eye icons
+import "./login.css";
 
 const Login = () => {
-  const { user, logoutUser } = useContext(AuthContext);
-  let { loginUser } = useContext(AuthContext);
+  const { user, logoutUser, loginUser } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  const [passwordVisible, setPasswordVisible] = useState(false);
+
+  const togglePassword = () => setPasswordVisible(!passwordVisible);
 
   const handleLogin = async (event) => {
     await loginUser(event);
@@ -20,10 +24,7 @@ const Login = () => {
           <div className="text-center">
             <h1 className="display-3 text-primary fw-bold">LocalHost</h1>
             <h2 className="text-secondary">
-              <span className="text-danger" style={{ fontWeight: "700" }}>
-                :
-              </span>{" "}
-              Blog
+              <span className="text-danger fw-bold">:</span> Blog
             </h2>
             <p className="mt-4 fs-5 text-muted">
               Welcome to LocalHost Blog! Connect, share, and inspire.
@@ -47,6 +48,8 @@ const Login = () => {
             ) : (
               <form onSubmit={handleLogin}>
                 <h2 className="text-center mb-4 text-primary">Login</h2>
+
+                {/* Username Field */}
                 <div className="mb-3">
                   <input
                     type="text"
@@ -55,20 +58,30 @@ const Login = () => {
                     placeholder="Username"
                   />
                 </div>
-                <div className="mb-3">
+
+                {/* Password Field with Toggle */}
+                <div className="mb-3 input-group">
                   <input
-                    type="password"
+                    type={passwordVisible ? "text" : "password"}
                     name="password"
                     className="form-control"
                     placeholder="Password"
                   />
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary"
+                    onClick={togglePassword}
+                  >
+                    {passwordVisible ? <FaEyeSlash /> : <FaEye />}
+                  </button>
                 </div>
-                <button
-                  type="submit"
-                  className="btn btn-primary btn-block w-100"
-                >
+
+                {/* Login Button */}
+                <button type="submit" className="btn btn-primary btn-block w-100">
                   Login
                 </button>
+
+                {/* Register Link */}
                 <p className="text-center mt-3">
                   Not a user?{" "}
                   <Link to="/register" className="text-decoration-none">

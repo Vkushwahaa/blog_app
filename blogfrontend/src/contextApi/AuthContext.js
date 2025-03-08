@@ -133,7 +133,6 @@ const registerUser = useCallback(
         const errorData = await response.json();
         throw new Error(errorData?.detail || "Failed to register.");
       }
-
       alert("User has been registered");
       navigate("/login");
     } catch (error) {
