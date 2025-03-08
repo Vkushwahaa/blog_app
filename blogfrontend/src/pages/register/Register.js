@@ -1,13 +1,11 @@
 import React, { useContext, useState } from "react";
 import AuthContext from "../../contextApi/AuthContext";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "./Register.css"; 
+import "./Register.css";
 
 const Register = () => {
   const { registerUser } = useContext(AuthContext);
-  const navigate = useNavigate();
 
   const [formValues, setFormValues] = useState({
     username: "",
@@ -36,7 +34,7 @@ const Register = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormValues((prev) => ({ ...prev, [name]: value }));
-    setFormErrors((prev) => ({ ...prev, [name]: "" })); // Clear individual field errors on change
+    setFormErrors((prev) => ({ ...prev, [name]: "" })); // Clear field errors on input
     setSubmissionError(""); // Clear global errors
   };
 
@@ -46,22 +44,30 @@ const Register = () => {
     setFormErrors(errors);
 
     if (Object.keys(errors).length > 0) {
-      setSubmissionError("Please correct the highlighted errors before proceeding.");
       return;
     }
 
-    try {
-      await registerUser({
-        username: formValues.username,
-        password: formValues.password,
-        email: formValues.email,
-        first_name: formValues.firstName,
-        last_name: formValues.lastName,
-      });
+    const response = await registerUser({
+      username: formValues.username,
+      password: formValues.password,
+      email: formValues.email,
+      first_name: formValues.firstName,
+      last_name: formValues.lastName,
+    });
 
-      navigate("/login"); // Redirect after successful registration
-    } catch (error) {
-      setSubmissionError("Registration failed. Please try again.");
+    if (!response.success) {
+      if (response.errors) {
+        let backendErrors = {};
+        Object.keys(response.errors).forEach((key) => {
+          backendErrors[key] = response.errors[key].join(', ');
+        });
+        setFormErrors(backendErrors);
+      } else {
+        setSubmissionError("An unexpected error occurred. Please try again.");
+      }
+    } else {
+      alert("Registration successful! You can now log in.");
+      window.location.href = '/login';
     }
   };
 
@@ -82,8 +88,10 @@ const Register = () => {
             <form onSubmit={handleRegister}>
               <h3 className="register-header text-center mb-4 text-primary">Create an Account</h3>
 
+              {/* Global Error Message */}
               {submissionError && <div className="alert alert-danger">{submissionError}</div>}
 
+              {/* Username */}
               <div className="mb-3">
                 <input
                   type="text"
@@ -96,6 +104,7 @@ const Register = () => {
                 <div className="invalid-feedback">{formErrors.username}</div>
               </div>
 
+              {/* Password */}
               <div className="mb-3">
                 <div className="input-group">
                   <input
@@ -106,17 +115,14 @@ const Register = () => {
                     value={formValues.password}
                     onChange={handleInputChange}
                   />
-                  <button
-                    type="button"
-                    className="btn btn-outline-secondary"
-                    onClick={togglePassword}
-                  >
+                  <button type="button" className="btn btn-outline-secondary" onClick={togglePassword}>
                     {passwordVisible ? <FaEyeSlash /> : <FaEye />}
                   </button>
                 </div>
                 <div className="invalid-feedback">{formErrors.password}</div>
               </div>
 
+              {/* Email */}
               <div className="mb-3">
                 <input
                   type="email"
@@ -129,6 +135,7 @@ const Register = () => {
                 <div className="invalid-feedback">{formErrors.email}</div>
               </div>
 
+              {/* First Name */}
               <div className="mb-3">
                 <input
                   type="text"
@@ -140,6 +147,8 @@ const Register = () => {
                 />
                 <div className="invalid-feedback">{formErrors.firstName}</div>
               </div>
+
+              {/* Last Name */}
               <div className="mb-3">
                 <input
                   type="text"
@@ -152,6 +161,7 @@ const Register = () => {
                 <div className="invalid-feedback">{formErrors.lastName}</div>
               </div>
 
+              {/* Submit Button */}
               <button type="submit" className="btn btn-primary w-100">Register</button>
             </form>
 
@@ -163,6 +173,6 @@ const Register = () => {
       </div>
     </div>
   );
-};
+}
 
 export default Register;

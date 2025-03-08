@@ -1,6 +1,6 @@
 import React, { useContext, useState } from "react";
 import AuthContext from "../../contextApi/AuthContext";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import "./login.css";
 
@@ -36,23 +36,23 @@ const Login = () => {
     event.preventDefault();
     const errors = validateForm();
     setFormErrors(errors);
-
+  
     if (Object.keys(errors).length > 0) {
       setSubmissionError("Please correct the highlighted errors.");
       return;
     }
-
+  
     try {
       await loginUser(event);
     } catch (error) {
-      setSubmissionError("Invalid username or password.");
+      setSubmissionError(error.message || "Invalid username or password.");
     }
   };
+  
 
   return (
     <div className="container-fluid vh-100 d-flex align-items-center justify-content-center">
       <div className="row w-100">
-        {/* Branding Section */}
         <div className="col-lg-6 d-none d-lg-flex align-items-center justify-content-center">
           <div className="text-center">
             <h1 className="display-3 text-primary fw-bold">LocalHost</h1>

@@ -40,31 +40,36 @@ const isTokenExpired = (token) => {
 };
 
 
-  const loginUser = useCallback(
-    async (event) => {
-      try {
-        event.preventDefault();
-        const response = await fetch(`https://localhost-blog.onrender.com/auths/login/`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            username: event.target.username.value,
-            password: event.target.password.value,
-          }),
-        });
-        const data = await response.json();
-        if (response.status === 200) {
-          setAuthTokens(data);
-          setUser(jwtDecode(data.access));
-          localStorage.setItem("authTokens", JSON.stringify(data));
-          navigate("/");
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    },
-    [navigate]
-  );
+const loginUser = useCallback(async (event) => {
+  event.preventDefault();
+
+  try {
+    const response = await fetch(`https://localhost-blog.onrender.com/auths/login/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: event.target.username.value,
+        password: event.target.password.value,
+      }),
+    });
+
+    const data = await response.json();
+    console.log("Login Response:", data); // ✅ Debugging step
+
+    if (!response.ok) {
+      throw new Error(data.detail || "Invalid username or password.");
+    }
+
+    setAuthTokens(data);
+    setUser(jwtDecode(data.access));
+    localStorage.setItem("authTokens", JSON.stringify(data));
+    navigate("/");
+  } catch (error) {
+    console.error("Login Error:", error.message);
+    throw error;
+  }
+}, [navigate]);
+
 
   const logoutUser = useCallback(() => {
     setAuthTokens(null);
@@ -117,7 +122,6 @@ const isTokenExpired = (token) => {
      setTokenRefreshed(true);
    }
  }, [authTokens, logoutUser]);
-
  const registerUser = useCallback(
   async (userData) => {
     try {
@@ -128,22 +132,18 @@ const isTokenExpired = (token) => {
       });
 
       const data = await response.json();
-      console.log("API Response:", data); // Log response for debugging
-
+      console.log("API Response:", data); 
       if (!response.ok) {
-        throw new Error(data?.detail || "Failed to register.");
+        return { success: false, errors: data };
       }
-
-      alert("Registration successful! Redirecting to login...");
-      navigate("/login");
+      return { success: true, data };
     } catch (error) {
       console.error("Registration Error:", error);
-      alert(error.message || "An error occurred during registration.");
+      return { success: false, errors: { detail: "An unexpected error occurred. Please try again." } };
     }
   },
-  [navigate]
+  []
 );
-
 useEffect(() => {
   const storedTokens = localStorage.getItem("authTokens");
   if (storedTokens && !authTokens) {
