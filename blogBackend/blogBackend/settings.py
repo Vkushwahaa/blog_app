@@ -240,7 +240,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 CORS_ALLOWED_ORIGINS = [
-
+"https://blog-app-zeta-weld.vercel.app/",
     "http://localhost:3002",
     "http://localhost:3001",
     
