@@ -17,6 +17,7 @@ export const AppProvider = ({ children }) => {
   let navigate = useNavigate();
 
 
+
   const [post, setPost] = useState("");
 
   const [categories, setCategories] = useState([]);
@@ -29,7 +30,7 @@ export const AppProvider = ({ children }) => {
   const getAuthor = useCallback(async (id) => {
     try {
       const response = await fetch(
-        `/api/authors/?id=${id}`
+        `https://localhost-blog.onrender.com/api/authors/?id=${id}`
       );
       if (!response.ok) {
         throw new Error(`Error: ${response.status}`);
@@ -47,7 +48,7 @@ export const AppProvider = ({ children }) => {
   const searchPosts = useCallback(async (searchTerm) => {
     try {
       const response = await fetch(
-        `/api/posts?title=${searchTerm}&published=True` // Added 'status=published'
+        `https://localhost-blog.onrender.com/api/posts?title=${searchTerm}&published=True` // Added 'status=published'
       );
       if (!response.ok) throw new Error("Failed to fetch posts");
       const data = await response.json();
@@ -76,7 +77,7 @@ export const AppProvider = ({ children }) => {
     }
 
     try {
-      const response = await fetch(`/api/author/edit/`, {
+      const response = await fetch(`https://localhost-blog.onrender.com/api/author/edit/`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${authTokens?.access}`,
@@ -98,7 +99,7 @@ export const AppProvider = ({ children }) => {
 
   const editBio = useCallback(async (bio) => {
     try {
-      const response = await fetch("/api/author/edit/", {
+      const response = await fetch(`https://localhost-blog.onrender.com/api/author/edit/`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -128,7 +129,7 @@ export const AppProvider = ({ children }) => {
       setLoadingPost(true);
       try {
         const response = await fetch(
-          nextPostPage || `/api/userpost/?id=${id}`,
+          nextPostPage || `https://localhost-blog.onrender.com/api/userpost/?id=${id}`,
           {
             method: "GET",
             headers: { Authorization: `Bearer ${authTokens?.access}` },
@@ -194,7 +195,7 @@ export const AppProvider = ({ children }) => {
   const getPost = useCallback(async (id) => {
     try {
       const response = await fetch(
-        `/api/post/${id}?published=true`
+        `https://localhost-blog.onrender.com/api/post/${id}?published=true`
       );
       const data = await response.json();
       if (response.status === 200) {
@@ -210,7 +211,7 @@ export const AppProvider = ({ children }) => {
   const getPostUpdate = useCallback(
     async (id) => {
       try {
-        const response = await fetch(`/api/post/${id}`, {
+        const response = await fetch(`https://localhost-blog.onrender.com/api/post/${id}`, {
           headers: {
             Authorization: `Bearer ${authTokens?.access}`, // If using JWT authentication
           },
@@ -236,7 +237,7 @@ export const AppProvider = ({ children }) => {
   //fetch categories
   const getCategories = useCallback(async () => {
     try {
-      const response = await fetch(`/api/category`);
+      const response = await fetch(`https://localhost-blog.onrender.com/api/category`);
       const data = await response.json();
       if (response.status === 200) {
         setCategories(data);
@@ -261,7 +262,7 @@ export const AppProvider = ({ children }) => {
           ? "?published=True"
           : "?published=True"; // Add this filter to exclude unpublished posts
         const response = await fetch(
-          `/api/search?category=${category}&${query}`,
+          `https://localhost-blog.onrender.com/api/search?category=${category}&${query}`,
           {
             method: "GET",
             headers: { "Content-Type": "application/json" },
@@ -282,7 +283,7 @@ export const AppProvider = ({ children }) => {
   const getComments = useCallback(async (postId) => {
     try {
       const response = await fetch(
-        `/api/post/${postId}/comments/?published=true` // Filter comments based on post published status
+        `https://localhost-blog.onrender.com/api/post/${postId}/comments/?published=true` // Filter comments based on post published status
       );
       const data = await response.json();
       setComment(data);
@@ -294,7 +295,7 @@ export const AppProvider = ({ children }) => {
   const fetchDrafts = async () => {
     try {
       const response = await fetch(
-        "/api/posts/?published=false",
+        "https://localhost-blog.onrender.com/api/posts/?published=false",
         {
           headers: {
             Authorization: `Bearer ${authTokens.access}`,
@@ -333,7 +334,7 @@ export const AppProvider = ({ children }) => {
           formData.append("img", newPost.img);
         }
 
-        const response = await fetch(`/api/post/create/`, {
+        const response = await fetch(`https://localhost-blog.onrender.com/api/post/create/`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${authTokens?.access}`,
@@ -368,7 +369,7 @@ const updatePost = useCallback(
       }
 
       const response = await fetch(
-        `/api/post/${postId}/update/`,
+        `https://localhost-blog.onrender.com/api/post/${postId}/update/`,
         {
           method: "PUT",
           headers: {
@@ -396,7 +397,7 @@ const updatePost = useCallback(
   const deletePost = useCallback(
     async (id) => {
       try {
-        await fetch(`/api/post/${id}/delete/`, {
+        await fetch(`https://localhost-blog.onrender.com/api/post/${id}/delete/`, {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
@@ -416,7 +417,7 @@ const updatePost = useCallback(
     async (newBody, postId) => {
       try {
         const response = await fetch(
-          `/api/post/${postId}/comment/create/`,
+          `https://localhost-blog.onrender.com/api/post/${postId}/comment/create/`,
           {
             method: "POST",
             headers: {
@@ -440,7 +441,7 @@ const updatePost = useCallback(
     async (postId, editingCommentId, updatedBody) => {
       try {
         const response = await fetch(
-          `/api/post/${postId}/comment/${editingCommentId}/update/`,
+          `https://localhost-blog.onrender.com/api/post/${postId}/comment/${editingCommentId}/update/`,
           {
             method: "PUT",
             headers: {
@@ -467,7 +468,7 @@ const updatePost = useCallback(
     async (postId, id) => {
       try {
         const response = await fetch(
-          `/api/post/${postId}/comment/${id}/delete/`,
+          `https://localhost-blog.onrender.com/api/post/${postId}/comment/${id}/delete/`,
           {
             method: "DELETE",
             headers: {

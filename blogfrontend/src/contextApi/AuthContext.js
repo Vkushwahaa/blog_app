@@ -44,7 +44,7 @@ const isTokenExpired = (token) => {
     async (event) => {
       try {
         event.preventDefault();
-        const response = await fetch(`/auths/login/`, {
+        const response = await fetch(`https://localhost-blog.onrender.com/auths/login/`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -92,7 +92,7 @@ const isTokenExpired = (token) => {
    try {
      console.log("Refreshing token...");
      const response = await fetch(
-       `/auths/token/refresh/`,
+       `https://localhost-blog.onrender.com/auths/token/refresh/`,
        {
          method: "POST",
          headers: { "Content-Type": "application/json" },
@@ -123,7 +123,7 @@ const isTokenExpired = (token) => {
 const registerUser = useCallback(
   async (userData) => {
     try {
-      const response = await fetch(`/auths/register/`, {
+      const response = await fetch(`https://localhost-blog.onrender.com/auths/register/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(userData),

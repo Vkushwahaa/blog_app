@@ -3,11 +3,15 @@ import { Link } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./ScrollArea.css";
 
+
+
+
 const ScrollArea = () => {
   const [posts, setPosts] = useState([]);
   const [nextPage, setNextPage] = useState(null);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
+
 
   const getPostList = useCallback(async () => {
     if (!hasMore || loading) return;
@@ -16,7 +20,7 @@ const ScrollArea = () => {
     try {
       const response = await fetch(
         nextPage ||
-          `/api/post/?published=true&order_by=updated_at`
+          `https://localhost-blog.onrender.com/api/post/?published=true&order_by=updated_at`
       );
       if (response.ok) {
         const data = await response.json();
