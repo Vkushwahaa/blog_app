@@ -50,7 +50,7 @@ const UserPage = () => {
 
   // Navigate to update blog page
   const handleUpdatePost = (postId) => {
-    navigate(`/updateBlog/${postId}`);
+    navigate(`https://localhost-blog.onrender.com/updateBlog/${postId}`);
   };
 
   return (

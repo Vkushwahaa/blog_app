@@ -34,8 +34,8 @@ const SinglePostPage = () => {
                 <img
                   src={
                     author.img
-                      ? `http://127.0.0.1:8000/${author.img}`
-                      : "http://127.0.0.1:8000/media/author_images/default.jpg"
+                      ? `https://localhost-blog.onrender.com/${author.img}`
+                      : "https://localhost-blog.onrender.com/media/author_images/default.jpg"
                   }
                   alt={author.name}
                   className="rounded-circle"
