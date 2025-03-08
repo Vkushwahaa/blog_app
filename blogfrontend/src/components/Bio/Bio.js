@@ -45,8 +45,8 @@ const Bio = ({ id,len }) => {
                 <img
                   src={
                     author.img
-                      ? `https://localhost-blog.onrender.com//${author.img}`
-                      : "https://localhost-blog.onrender.com//media/author_images/default.jpg"
+                      ? `https://localhost-blog.onrender.com/${author.img}`
+                      : "https://localhost-blog.onrender.com/media/author_images/default.jpg"
                   }
                   alt="Author Avatar"
                   className="rounded-circle bio-image"
