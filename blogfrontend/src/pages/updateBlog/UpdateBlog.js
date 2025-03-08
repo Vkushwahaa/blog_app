@@ -100,15 +100,17 @@ const handledelete = async (e) => {
           <div className="upload-image-container position-relative">
             {newPost.img ? (
               <img
-                src={
-                  newPost.img instanceof File
-                    ? URL.createObjectURL(newPost.img)
-                    : newPost.img
-                }
-                alt="Featured"
-                className="w-100 img-fluid"
-                style={{ maxHeight: "400px", objectFit: "cover" }}
-              />
+              src={
+                newPost.img instanceof File
+                  ? URL.createObjectURL(newPost.img)
+                  : newPost.img?.startsWith("http")
+                  ? newPost.img
+                  : `https://localhost-blog.onrender.com${newPost.img?.startsWith("/") ? newPost.img : "/" + newPost.img}`
+              }
+              alt="Featured"
+              className="w-100 img-fluid"
+              style={{ maxHeight: "400px", objectFit: "cover" }}
+            />            
             ) : (
               <div className="upload-placeholder text-center py-5">
                 <label className="btn btn-outline-secondary">

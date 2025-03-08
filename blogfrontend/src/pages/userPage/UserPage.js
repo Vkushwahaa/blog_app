@@ -70,78 +70,55 @@ const UserPage = () => {
 
       {/* Posts List */}
       <div className="card-columns">
-        {user?.user_id === parseInt(id) ? (
-          userPost.length > 0 ? (
-            userPost.map((post) => (
-              <div className="card shadow-lg rounded" key={post.id}>
-                {post.img ? (
-                  <img
-                  src={post.img?.startsWith("http") ? post.img : `https://localhost-blog.onrender.com${post.img.startsWith("/") ? post.img : "/" + post.img}`}
-                  alt={post.title || "Post Image"}
-                  className="w-100 img-fluid rounded"
-                  style={{ maxHeight: "300px", objectFit: "cover" }}
-                />                
-                ) : (
-                  <div style={{ height: "10px" }}></div>
-                )}
-                <div className="card-body">
-                  <h5 className="card-title text-black">{post.title}</h5>
-                  <p className="card-text">
-                    Published: {String(post.published)}
-                  </p>
-                  <div className="card-text">
-                    <div
-                      className="post-body"
-                      dangerouslySetInnerHTML={{
-                        __html:
-                          post.body.length > 150
-                            ? `${post.body.substring(0, 150)}...`
-                            : post.body,
-                      }}
-                    />
-                  </div>
-                  <div className="d-flex justify-content-between">
-                    <Link to={`/${post.id}`} className="btn btn-info btn-sm">
-                      View Post
-                    </Link>
-                    <button
-                      onClick={() => handleUpdatePost(post.id)}
-                      className="btn btn-warning btn-sm"
-                    >
-                      Update
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))
-          ) : (
-            <p className="text-muted">No posts available.</p>
-          )
-        ) : userPost.length > 0 ? (
-          userPost.map((post) => (
-            <div className="card shadow-lg rounded" key={post.id}>
-              <div className="card-body">
-                <h5 className="card-title text-primary">{post.title}</h5>
-                {/* Render HTML using dangerouslySetInnerHTML with truncation */}
-                <div
-                  className="post-body"
-                  dangerouslySetInnerHTML={{
-                    __html:
-                      post.body.length > 150
-                        ? `${post.body.substring(0, 150)}...`
-                        : post.body,
-                  }}
-                />
-                <Link to={`/${post.id}`} className="btn btn-info btn-sm">
-                  View Post
-                </Link>
-              </div>
-            </div>
-          ))
+  {userPost.length > 0 ? (
+    userPost.map((post) => (
+      <div className="card shadow-lg rounded" key={post.id}>
+        {post.img ? (
+          <img
+            src={post.img?.startsWith("http") ? post.img : `https://localhost-blog.onrender.com${post.img.startsWith("/") ? post.img : "/" + post.img}`}
+            alt={post.title || "Post Image"}
+            className="w-100 img-fluid rounded"
+            style={{ maxHeight: "300px", objectFit: "cover" }}
+          />                
         ) : (
-          <p className="text-muted">No posts available.</p>
+          <div style={{ height: "10px" }}></div>
         )}
+        <div className="card-body">
+          <h5 className="card-title text-black">{post.title}</h5>
+          <p className="card-text">
+            Published: {String(post.published)}
+          </p>
+          <div className="card-text">
+            <div
+              className="post-body"
+              dangerouslySetInnerHTML={{
+                __html:
+                  post.body.length > 150
+                    ? `${post.body.substring(0, 150)}...`
+                    : post.body,
+              }}
+            />
+          </div>
+          <div className="d-flex justify-content-between">
+            <Link to={`/${post.id}`} className="btn btn-info btn-sm">
+              View Post
+            </Link>
+            {user?.user_id === parseInt(id) && (
+              <button
+                onClick={() => handleUpdatePost(post.id)}
+                className="btn btn-warning btn-sm"
+              >
+                Update
+              </button>
+            )}
+          </div>
+        </div>
       </div>
+    ))
+  ) : (
+    <p className="text-muted">No posts available.</p>
+  )}
+</div>
 
       {/* Loading & End of Posts */}
       {loadingPost && (
