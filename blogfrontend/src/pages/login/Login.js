@@ -1,19 +1,54 @@
 import React, { useContext, useState } from "react";
 import AuthContext from "../../contextApi/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
-import { FaEye, FaEyeSlash } from "react-icons/fa"; // Import eye icons
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import "./login.css";
 
 const Login = () => {
   const { user, logoutUser, loginUser } = useContext(AuthContext);
   const navigate = useNavigate();
 
+  const [formValues, setFormValues] = useState({
+    username: "",
+    password: "",
+  });
+
+  const [formErrors, setFormErrors] = useState({});
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const [submissionError, setSubmissionError] = useState("");
 
   const togglePassword = () => setPasswordVisible(!passwordVisible);
 
+  const validateForm = () => {
+    let errors = {};
+    if (formValues.username.trim() === "") errors.username = "Username is required.";
+    if (formValues.password.length < 8) errors.password = "Password must be at least 8 characters.";
+    return errors;
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormValues((prev) => ({ ...prev, [name]: value }));
+    setFormErrors((prev) => ({ ...prev, [name]: "" }));
+    setSubmissionError("");
+  };
+
   const handleLogin = async (event) => {
-    await loginUser(event);
+    event.preventDefault();
+    const errors = validateForm();
+    setFormErrors(errors);
+
+    if (Object.keys(errors).length > 0) {
+      setSubmissionError("Please correct the highlighted errors.");
+      return;
+    }
+
+    try {
+      await loginUser(event);
+      navigate("/dashboard");
+    } catch (error) {
+      setSubmissionError("Invalid username or password.");
+    }
   };
 
   return (
@@ -26,22 +61,15 @@ const Login = () => {
             <h2 className="text-secondary">
               <span className="text-danger fw-bold">:</span> Blog
             </h2>
-            <p className="mt-4 fs-5 text-muted">
-              Welcome to LocalHost Blog! Connect, share, and inspire.
-            </p>
+            <p className="mt-4 fs-5 text-muted">Welcome to LocalHost Blog! Connect, share, and inspire.</p>
           </div>
         </div>
-
-        {/* Login Section */}
         <div className="col-lg-4 col-md-8 col-sm-10 mx-auto">
           <div className="card shadow-lg p-4 border-0">
             {user ? (
               <div className="text-center">
                 <h2 className="mb-3">Welcome, {user.username}!</h2>
-                <button
-                  className="btn btn-danger btn-block"
-                  onClick={() => logoutUser()}
-                >
+                <button className="btn btn-danger w-100" onClick={() => logoutUser()}>
                   Logout
                 </button>
               </div>
@@ -49,35 +77,41 @@ const Login = () => {
               <form onSubmit={handleLogin}>
                 <h2 className="text-center mb-4 text-primary">Login</h2>
 
-                {/* Username Field */}
+                {/* Form Validation Summary */}
+                {submissionError && <div className="alert alert-danger">{submissionError}</div>}
+
+                {/* Username */}
                 <div className="mb-3">
                   <input
                     type="text"
                     name="username"
-                    className="form-control"
+                    className={`form-control ${formErrors.username ? "is-invalid" : ""}`}
                     placeholder="Username"
+                    value={formValues.username}
+                    onChange={handleInputChange}
                   />
+                  <div className="invalid-feedback">{formErrors.username}</div>
                 </div>
 
-                {/* Password Field with Toggle */}
-                <div className="mb-3 input-group">
-                  <input
-                    type={passwordVisible ? "text" : "password"}
-                    name="password"
-                    className="form-control"
-                    placeholder="Password"
-                  />
-                  <button
-                    type="button"
-                    className="btn btn-outline-secondary"
-                    onClick={togglePassword}
-                  >
-                    {passwordVisible ? <FaEyeSlash /> : <FaEye />}
-                  </button>
+                <div className="mb-3">
+                  <div className="input-group">
+                    <input
+                      type={passwordVisible ? "text" : "password"}
+                      name="password"
+                      className={`form-control ${formErrors.password ? "is-invalid" : ""}`}
+                      placeholder="Password"
+                      value={formValues.password}
+                      onChange={handleInputChange}
+                    />
+                    <button type="button" className="btn btn-outline-secondary" onClick={togglePassword}>
+                      {passwordVisible ? <FaEyeSlash /> : <FaEye />}
+                    </button>
+                  </div>
+                  <div className="invalid-feedback">{formErrors.password}</div>
                 </div>
 
                 {/* Login Button */}
-                <button type="submit" className="btn btn-primary btn-block w-100">
+                <button type="submit" className="btn btn-primary w-100">
                   Login
                 </button>
 
