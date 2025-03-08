@@ -42,18 +42,19 @@ const Bio = ({ id,len }) => {
           <>
             <div className="d-flex align-items-center">
               <div className="me-3">
-                <img
-                  src={
-                    author.img
-                      ? `https://localhost-blog.onrender.com/${author.img}`
-                      : "https://localhost-blog.onrender.com/media/author_images/default.jpg"
-                  }
-                  alt="Author Avatar"
-                  className="rounded-circle bio-image"
-                  width="150"
-                  height="150"
-                  style={{ objectFit: "cover" }}
-                />
+              <img
+                src={
+                  author.img
+                    ? `https://localhost-blog.onrender.com${author.img.startsWith("/") ? author.img : "/" + author.img}`
+                    : "https://localhost-blog.onrender.com/media/author_images/default.jpg"
+                }
+                alt="Author Avatar"
+                className="rounded-circle bio-image"
+                width="150"
+                height="150"
+                style={{ objectFit: "cover" }}
+              />
+
               </div>
               <div>
                 <h1

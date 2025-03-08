@@ -66,11 +66,15 @@ const Search = () => {
                   <div className="card shadow-lg rounded" key={post.id}>
                     {post.img ? (
                       <img
-                        src={post.img}
-                        alt={post.title || "Post Image"}
-                        className="w-100 img-fluid rounded"
-                        style={{ maxHeight: "350px", objectFit: "cover" }}
-                      />
+                      src={
+                        post.img?.startsWith("http")
+                          ? post.img
+                          : `https://localhost-blog.onrender.com${post.img?.startsWith("/") ? post.img : "/" + post.img}`
+                      }
+                      alt={post.title || "Post Image"}
+                      className="w-100 img-fluid rounded"
+                      style={{ maxHeight: "350px", objectFit: "cover" }}
+                    />                    
                     ) : (
                       <div style={{ height: "10px" }}></div>
                     )}

@@ -49,7 +49,7 @@ const SinglePostPage = () => {
                   className="text-decoration-none"
                   to={`/userpage/${author.id}`}
                 >
-                  <h2 className="mb-0">{author.name}</h2>
+                  <h2 className="mb-0">{author.user}</h2>
                 </Link>
               </div>
             </div>
