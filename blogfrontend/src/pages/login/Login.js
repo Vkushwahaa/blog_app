@@ -6,7 +6,6 @@ import "./login.css";
 
 const Login = () => {
   const { user, logoutUser, loginUser } = useContext(AuthContext);
-  const navigate = useNavigate();
 
   const [formValues, setFormValues] = useState({
     username: "",
@@ -45,7 +44,6 @@ const Login = () => {
 
     try {
       await loginUser(event);
-      navigate("/dashboard");
     } catch (error) {
       setSubmissionError("Invalid username or password.");
     }

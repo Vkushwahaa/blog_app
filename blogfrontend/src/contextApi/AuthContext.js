@@ -58,8 +58,6 @@ const isTokenExpired = (token) => {
           setUser(jwtDecode(data.access));
           localStorage.setItem("authTokens", JSON.stringify(data));
           navigate("/");
-        } else {
-          alert("Invalid credentials");
         }
       } catch (error) {
         console.error(error);
@@ -120,7 +118,7 @@ const isTokenExpired = (token) => {
    }
  }, [authTokens, logoutUser]);
 
-const registerUser = useCallback(
+ const registerUser = useCallback(
   async (userData) => {
     try {
       const response = await fetch(`https://localhost-blog.onrender.com/auths/register/`, {
@@ -129,11 +127,14 @@ const registerUser = useCallback(
         body: JSON.stringify(userData),
       });
 
+      const data = await response.json();
+      console.log("API Response:", data); // Log response for debugging
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData?.detail || "Failed to register.");
+        throw new Error(data?.detail || "Failed to register.");
       }
-      alert("User has been registered");
+
+      alert("Registration successful! Redirecting to login...");
       navigate("/login");
     } catch (error) {
       console.error("Registration Error:", error);
@@ -142,7 +143,6 @@ const registerUser = useCallback(
   },
   [navigate]
 );
-
 
 useEffect(() => {
   const storedTokens = localStorage.getItem("authTokens");
