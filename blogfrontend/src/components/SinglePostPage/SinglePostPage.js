@@ -35,8 +35,8 @@ const SinglePostPage = () => {
       {post ? (
         <div className="post-container">
           {author && (
-            <div className="author-info d-flex align-items-center mb-4">
-              <div className="author-avatar">
+            <div className="author-info d-flex align-items-center mb-4" style={{ display: "flex", alignItems: "center" }}>
+              <div className="author-avatar" style={{ marginRight: "15px" }}>
                 <img
                   src={authorImg}
                   alt={author.name}
@@ -44,7 +44,7 @@ const SinglePostPage = () => {
                   style={{ width: "60px", height: "60px", objectFit: "cover" }}
                 />
               </div>
-              <div className="author-details ms-3">
+              <div className="author-details">
                 <Link
                   className="text-decoration-none"
                   to={`/userpage/${author.id}`}
