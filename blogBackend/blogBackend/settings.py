@@ -240,12 +240,12 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 CORS_ALLOWED_ORIGINS = [
-"https://blog-app-zeta-weld.vercel.app/",
+"https://blog-app-zeta-weld.vercel.app",
     "http://localhost:3002",
     "http://localhost:3001",
     " http://localhost:3000",
     "http://10.0.2.253:3000",
-    "https://ominous-rotary-phone-x6jw57xjqw9f66q7-3000.app.github.dev",
-    
+    "https://ominous-rotary-phone-x6jw57xjqw9f66q7-3000.app.github.dev",    
 
 ]
+# CORS_ALLOW_CREDENTIALS = True
