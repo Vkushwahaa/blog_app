@@ -27,9 +27,9 @@ SECRET_KEY = config("SECRET_KEY")
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ["*", ".vercel.app", ".now.sh"]
+ALLOWED_HOSTS = ["localhost-blog.onrender.com"]
 
 import os
 
@@ -239,11 +239,19 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
-CORS_ALLOWED_ORIGINS = [
-    "https://blog-app-six-ivory.vercel.app",
-    "https://ominous-rotary-phone-x6jw57xjqw9f66q7-3000.app.github.dev",    
-
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://.*\.vercel\.app$",  # Allow all Vercel preview deployments
+    r"^https://blog-app-six-ivory\.vercel\.app$",  # Allow your production frontend
+    r"^https://ominous-rotary-phone-x6jw57xjqw9f66q7-3000\.app\.github\.dev$",
 ]
-CORS_ALLOW_CREDENTIALS = True  # Allow credentials (if using authentication)
+
+CORS_ALLOW_CREDENTIALS = True  # Set to False if not using authentication
+
 CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
-CORS_ALLOW_HEADERS = ["*"]  # Allow all headers
+
+CORS_ALLOW_HEADERS = [
+    "Authorization",
+    "Content-Type",
+    "X-CSRFToken",
+]
+
