@@ -154,6 +154,7 @@ const CreateBlogPage = () => {
               ))}
             </select>
             {errors.category && (
+              
               <div className="invalid-feedback">{errors.category}</div>
             )}
           </div>

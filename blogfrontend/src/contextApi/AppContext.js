@@ -237,10 +237,17 @@ export const AppProvider = ({ children }) => {
   //fetch categories
   const getCategories = useCallback(async () => {
     try {
-      const response = await fetch(`https://localhost-blog.onrender.com/api/category`);
+      const response = await fetch("https://localhost-blog.onrender.com/api/category", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
       const data = await response.json();
       if (response.status === 200) {
         setCategories(data);
+        console.log("API Response:", data);
 
         console.log("category daata", data);
       }

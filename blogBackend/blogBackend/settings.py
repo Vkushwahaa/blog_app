@@ -244,4 +244,6 @@ CORS_ALLOWED_ORIGINS = [
     "https://ominous-rotary-phone-x6jw57xjqw9f66q7-3000.app.github.dev",    
 
 ]
-# CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_CREDENTIALS = True  # Allow credentials (if using authentication)
+CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+CORS_ALLOW_HEADERS = ["*"]  # Allow all headers
