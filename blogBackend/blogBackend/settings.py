@@ -29,7 +29,7 @@ SECRET_KEY = config("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ["localhost-blog.onrender.com", "blog-app-six-ivory.vercel.app", "127.0.0.1"]
+ALLOWED_HOSTS = ["*"]
 
 import os
 
