@@ -29,10 +29,6 @@ SECRET_KEY = config("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ["localhost-blog.onrender.com", 
-    "blog-app-six-ivory.vercel.app",
-    "localhost"]
-
 import os
 
 MEDIA_ROOT = BASE_DIR / 'media'  # Ensure this is correc
@@ -96,6 +92,9 @@ REST_FRAMEWORK = {
     ),
      'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',  
+    ]
     
 }
 
@@ -236,12 +235,18 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-
 CORS_ALLOWED_ORIGINS = [
     "https://blog-app-six-ivory.vercel.app",  
     "http://localhost:3000",                
     "https://localhost-blog.onrender.com"
 ]
+
+# Good security practice
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://[\w-]+\.onrender\.com$",
+    r"^https://[\w-]+-localhost-blog\.onrender\.com$"
+]
+
 
 CORS_ALLOW_CREDENTIALS = True  # Set to False if not using authentication
 
@@ -252,4 +257,14 @@ CORS_ALLOW_HEADERS = [
     "Content-Type",
     "X-CSRFToken",
     "cache-control"
+]
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+CORS_ALLOW_CREDENTIALS = True  # Only if using cookies/auth
+
+
+ALLOWED_HOSTS = [
+    "localhost-blog.onrender.com",
+    "blog-app-six-ivory.vercel.app",
+    "localhost"
 ]
