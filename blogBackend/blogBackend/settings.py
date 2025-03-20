@@ -29,7 +29,9 @@ SECRET_KEY = config("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["localhost-blog.onrender.com", 
+    "blog-app-six-ivory.vercel.app",
+    "localhost"]
 
 import os
 
@@ -236,8 +238,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 CORS_ALLOWED_ORIGINS = [
-    "https://blog-app-six-ivory.vercel.app",  # Your Vercel frontend
-    "http://localhost:3000",  # If you test locally
+    "https://blog-app-six-ivory.vercel.app",  
+    "http://localhost:3000",                
+    "https://localhost-blog.onrender.com"
 ]
 
 CORS_ALLOW_CREDENTIALS = True  # Set to False if not using authentication
@@ -245,8 +248,8 @@ CORS_ALLOW_CREDENTIALS = True  # Set to False if not using authentication
 CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
 
 CORS_ALLOW_HEADERS = [
-    "Authorization",
+     "Authorization",
     "Content-Type",
     "X-CSRFToken",
+    "cache-control"
 ]
-
