@@ -83,7 +83,6 @@ const UserPage = () => {
         {userPost.length > 0 ? (
           userPost.map((post) => (
             <div className="card shadow-lg rounded" key={post.id}>
-              {console.log("post from userpage", post)}
               {post.img ? (
                 <img
                   src={post.img}
