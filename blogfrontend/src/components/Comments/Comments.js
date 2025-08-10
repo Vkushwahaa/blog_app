@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import AuthContext from "../../contextApi/AuthContext";
 import AppContext from "../../contextApi/AppContext";
-import "./Comments.css"
+import "./Comments.css";
 const Comment = ({ postId }) => {
   const {
     getComments,
@@ -10,7 +10,6 @@ const Comment = ({ postId }) => {
     updateComment,
     deleteComment,
     getPostList,
-
   } = useContext(AppContext);
   const { user } = useContext(AuthContext);
   const [editingCommentId, setEditingCommentId] = useState(null);
@@ -27,7 +26,6 @@ const Comment = ({ postId }) => {
 
     fetchComments();
   }, [postId, Comment]);
-
 
   const handleEditClick = (id, body) => {
     setEditingCommentId(id);
@@ -82,7 +80,6 @@ const Comment = ({ postId }) => {
         {Array.isArray(comment) && comment.length > 0 ? (
           comment.map((comment) => (
             <div className="comment-card p-3 mb-4 shadow-sm" key={comment.id}>
-              
               <p className="author-name fw-bold mb-1">{comment.author_name}</p>
               {editingCommentId === comment.id ? (
                 <div>

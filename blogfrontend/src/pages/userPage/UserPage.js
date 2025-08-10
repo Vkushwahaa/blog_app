@@ -4,6 +4,8 @@ import Bio from "../../components/Bio/Bio";
 import AppContext from "../../contextApi/AppContext";
 import { Link } from "react-router-dom";
 import AuthContext from "../../contextApi/AuthContext";
+import "react-quill/dist/quill.snow.css";
+
 import "./UserPage.css";
 const UserPage = () => {
   const navigate = useNavigate();
@@ -16,8 +18,9 @@ const UserPage = () => {
     setUserPost,
     setHasMorePost,
     setNextPostPage,
+    getAuthor,
   } = useContext(AppContext);
-  const { user } = useContext(AuthContext);
+  const { user, author } = useContext(AuthContext);
 
   // Function to fetch posts manually
   const handleFetchPosts = async () => {
@@ -36,11 +39,17 @@ const UserPage = () => {
     setHasMorePost(true);
     setNextPostPage(null);
   };
-
   useEffect(() => {
-    
     resetPosts();
-  }, [id]);
+    if (user && user.user_id) {
+      getAuthor(user.user_id).catch((err) =>
+        console.error("Failed to fetch author:", err)
+      );
+    }
+
+    const isAuthor = user && parseInt(user?.user_id) === parseInt(id);
+    getUserPostList(id, isAuthor);
+  }, [id, user]);
 
   // Handle user change (triggered manually)
   const handleUserChange = () => {
@@ -70,55 +79,57 @@ const UserPage = () => {
 
       {/* Posts List */}
       <div className="card-columns">
-  {userPost.length > 0 ? (
-    userPost.map((post) => (
-      <div className="card shadow-lg rounded" key={post.id}>
-        {post.img ? (
-          <img
-            src={post.img?.startsWith("http") ? post.img : `https://localhost-blog.onrender.com${post.img.startsWith("/") ? post.img : "/" + post.img}`}
-            alt={post.title || "Post Image"}
-            className="w-100 img-fluid rounded"
-            style={{ maxHeight: "300px", objectFit: "cover" }}
-          />                
+        {userPost.length > 0 ? (
+          userPost.map((post) => (
+            <div className="card shadow-lg rounded" key={post.id}>
+              {console.log("post from userpage", post)}
+              {post.img ? (
+                <img
+                  src={post.img}
+                  alt={post.title || "Post Image"}
+                  className="w-100 img-fluid rounded"
+                  style={{ maxHeight: "300px", objectFit: "cover" }}
+                />
+              ) : (
+                <div style={{ height: "10px" }}></div>
+              )}
+              <div className="card-body">
+                <h5 className="card-title text-black">{post.title}</h5>
+                <p className="card-text">Published: {String(post.published)}</p>
+                <div className="card-text">
+                  <div
+                    className="post-body ql-editor"
+                    dangerouslySetInnerHTML={{
+                      __html:
+                        post.body.length > 150
+                          ? `${post.body.substring(0, 150)}...`
+                          : post.body,
+                    }}
+                  />
+                </div>
+                <div className="d-flex justify-content-between">
+                  {post.published && (
+                    <Link to={`/${post.id}`} className="btn btn-info btn-sm">
+                      View Post
+                    </Link>
+                  )}
+
+                  {parseInt(user?.user_id) === parseInt(id) && (
+                    <button
+                      onClick={() => handleUpdatePost(post.id)}
+                      className="btn btn-warning btn-sm"
+                    >
+                      Update
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))
         ) : (
-          <div style={{ height: "10px" }}></div>
+          <p className="text-muted">No posts available.</p>
         )}
-        <div className="card-body">
-          <h5 className="card-title text-black">{post.title}</h5>
-          <p className="card-text">
-            Published: {String(post.published)}
-          </p>
-          <div className="card-text">
-            <div
-              className="post-body"
-              dangerouslySetInnerHTML={{
-                __html:
-                  post.body.length > 150
-                    ? `${post.body.substring(0, 150)}...`
-                    : post.body,
-              }}
-            />
-          </div>
-          <div className="d-flex justify-content-between">
-            <Link to={`/${post.id}`} className="btn btn-info btn-sm">
-              View Post
-            </Link>
-            {user?.user_id === parseInt(id) && (
-              <button
-                onClick={() => handleUpdatePost(post.id)}
-                className="btn btn-warning btn-sm"
-              >
-                Update
-              </button>
-            )}
-          </div>
-        </div>
       </div>
-    ))
-  ) : (
-    <p className="text-muted">No posts available.</p>
-  )}
-</div>
 
       {/* Loading & End of Posts */}
       {loadingPost && (

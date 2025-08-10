@@ -3,7 +3,7 @@ body {
 }
 
 .container {
-  max-width: 800px; 
+  max-width: 800px;
 }
 
 .card {
@@ -41,7 +41,11 @@ button:hover {
   justify-content: center;
   align-items: center;
 }
-
+.ql-editor {
+  line-height: 1.2 !important; /* default is ~1.5-1.6, reduce for tighter lines */
+  padding: 8px 12px !important; /* adjust padding as needed */
+  min-height: 150px !important; /* you can reduce min height if too tall */
+}
 
 @media (max-width: 768px) {
   .container {

@@ -3,15 +3,11 @@ import { Link } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./ScrollArea.css";
 
-
-
-
 const ScrollArea = () => {
   const [posts, setPosts] = useState([]);
   const [nextPage, setNextPage] = useState(null);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
-
 
   const getPostList = useCallback(async () => {
     if (!hasMore || loading) return;
@@ -20,7 +16,7 @@ const ScrollArea = () => {
     try {
       const response = await fetch(
         nextPage ||
-          `https://localhost-blog.onrender.com/api/post/?published=true&order_by=updated_at`
+          `http://127.0.0.1:8000/api/post/?published=true&order_by=updated_at`
       );
       if (response.ok) {
         const data = await response.json();
@@ -75,22 +71,18 @@ const ScrollArea = () => {
               <div className="card shadow-lg rounded" key={post.id}>
                 {post.img ? (
                   <img
-                  src={
-                    post.img?.startsWith("http")
-                      ? post.img
-                      : `https://localhost-blog.onrender.com${post.img?.startsWith("/") ? post.img : "/" + post.img}`
-                  }
-                  alt={post.title || "Post Image"}
-                  className="w-100 img-fluid rounded"
-                  style={{ maxHeight: "350px", objectFit: "cover" }}
-                />                
+                    src={post.img}
+                    alt={post.title || "Post Image"}
+                    className="w-100 img-fluid rounded"
+                    style={{ maxHeight: "350px", objectFit: "cover" }}
+                  />
                 ) : (
                   <div style={{ height: "10px" }}></div>
                 )}
                 <div className="card-body">
                   <h1 className="card-title text-black">{post.title}</h1>
                   <div
-                    className="card-text"
+                    className="card-text ql-editor"
                     dangerouslySetInnerHTML={{
                       __html:
                         post.body.length > 150

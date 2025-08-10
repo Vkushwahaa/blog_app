@@ -1,8 +1,8 @@
 import { useEffect, useState, useContext } from "react";
 import AppContext from "../../contextApi/AppContext";
 import AuthContext from "../../contextApi/AuthContext";
-import './Bio.css'
-const Bio = ({ id,len }) => {
+import "./Bio.css";
+const Bio = ({ id, len }) => {
   const { user } = useContext(AuthContext); // User info from authentication context
   const { author, getAuthor, createBio, editBio, updateAuthorImage } =
     useContext(AppContext); // Get author and bio management functions
@@ -28,9 +28,9 @@ const Bio = ({ id,len }) => {
 
   const handleImageUpdate = async () => {
     if (image) {
-      await updateAuthorImage(bio, image); 
+      await updateAuthorImage(bio, image);
     } else {
-      await editBio({ bio }); 
+      await editBio({ bio });
     }
     setEditing(false);
   };
@@ -42,29 +42,18 @@ const Bio = ({ id,len }) => {
           <>
             <div className="d-flex align-items-center">
               <div className="me-3">
-              <img
-                src={
-                  author.img
-                    ? `https://localhost-blog.onrender.com${author.img.startsWith("/") ? author.img : "/" + author.img}`
-                    : "https://localhost-blog.onrender.com/media/author_images/default.jpg"
-                }
-                alt="Author Avatar"
-                className="rounded-circle bio-image"
-                width="150"
-                height="150"
-                style={{ objectFit: "cover" }}
-              />
-
+                <img
+                  src={author.img}
+                  alt="Author Avatar"
+                  className="rounded-circle bio-image"
+                  width="150"
+                  height="150"
+                  style={{ objectFit: "cover" }}
+                />
               </div>
               <div>
-                <h1
-                  className="mb-3 bio-user"
-                >
-                  {author.user}
-                </h1>
-                <p
-                  className="text-muted mb-0 bio-bio"
-                >
+                <h1 className="mb-3 bio-user">{author.user}</h1>
+                <p className="text-muted mb-0 bio-bio">
                   <strong>Bio:</strong>{" "}
                   {author.bio || (
                     <span className="text-warning">No bio provided</span>
@@ -73,7 +62,7 @@ const Bio = ({ id,len }) => {
               </div>
             </div>
 
-            {id === user?.user_id && (
+            {parseInt(id) === parseInt(user?.user_id) && (
               <div className="mt-4">
                 {editing ? (
                   <div>
@@ -103,7 +92,7 @@ const Bio = ({ id,len }) => {
                       >
                         {author.bio
                           ? "Update Bio & Image"
-                          : "Create Bio & Image"}
+                          : "Update Bio & Image"}
                       </button>
                       <button
                         className="btn btn-secondary"
@@ -126,7 +115,9 @@ const Bio = ({ id,len }) => {
           </>
         ) : (
           <div className="text-center">
-            <p className="text-muted mb-0">post your first blog to use profile page</p>
+            <p className="text-muted mb-0">
+              post your first blog to use profile page
+            </p>
           </div>
         )}
       </div>

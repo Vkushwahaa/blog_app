@@ -7,7 +7,7 @@ import "bootstrap-icons/font/bootstrap-icons.css"; // Import Bootstrap Icons
 import "./Header.css";
 
 const Header = () => {
-  const { user , logoutUser} = useContext(AuthContext);
+  const { user, logoutUser } = useContext(AuthContext);
   const { author, getAuthor } = useContext(AppContext);
   const [showSidebar, setShowSidebar] = useState(false);
   useEffect(() => {
@@ -103,7 +103,7 @@ const Header = () => {
             </Nav.Link>
             <Nav.Link
               as={Link}
-              to="/createBlog"
+              to={user ? "/createBlog" : "/login"}
               className="text-white"
               onClick={handleCloseSidebar}
             >

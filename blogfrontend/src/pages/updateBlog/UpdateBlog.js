@@ -4,12 +4,19 @@ import "react-quill/dist/quill.snow.css";
 import AppContext from "../../contextApi/AppContext";
 import { useParams } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "./UpdateBlogPage.css"; 
+import "./UpdateBlogPage.css";
 
 const UpdateBlogPage = () => {
   const { id } = useParams();
-  const { updatePost, getPostUpdate, categories, uPost ,deletePost,getPostList} =
-    useContext(AppContext);
+  const {
+    updatePost,
+    getPostUpdate,
+    categories,
+    uPost,
+    deletePost,
+    getUserPostList,
+  } = useContext(AppContext);
+
   const [newPost, setNewPost] = useState({
     title: "",
     body: "",
@@ -18,16 +25,30 @@ const UpdateBlogPage = () => {
     img: null,
   });
 
-useEffect(() => {
-  const handleGetPost = async () => {
-    try {
-      await getPostUpdate(id);
-    } catch (error) {
-      console.error("Error fetching post:", error);
-    }
-  };
-  handleGetPost();
-}, [id, getPostUpdate]);
+  // New loading state:
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    setNewPost({
+      title: "",
+      body: "",
+      category: "",
+      published: false,
+      img: null,
+    });
+
+    const handleGetPost = async () => {
+      try {
+        await getPostUpdate(id);
+      } catch (error) {
+        console.error("Error fetching post:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    handleGetPost();
+  }, [id, getPostUpdate]);
 
   useEffect(() => {
     if (uPost) {
@@ -36,7 +57,7 @@ useEffect(() => {
         body: uPost.body || "",
         category: uPost.category_name || "",
         published: uPost.published || false,
-        img: uPost.img || null, 
+        img: uPost.img || null,
       });
     }
   }, [uPost]);
@@ -51,26 +72,23 @@ useEffect(() => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      
-
       await updatePost(newPost, id);
       alert("Post updated successfully!");
-      await getPostList()
-      console.log("jeiue", newPost);
+      await getUserPostList();
     } catch (error) {
       console.error("Error updating post:", error);
     }
   };
-const handledelete = async (e) => {
-  e.preventDefault();
-  try {
-    await deletePost(id);
-    alert("Post updated successfully!");
-    console.log("jeiue", newPost);
-  } catch (error) {
-    console.error("Error updating post:", error);
-  }
-};
+
+  const handledelete = async (e) => {
+    e.preventDefault();
+    try {
+      await deletePost(id);
+      alert("Post deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting post:", error);
+    }
+  };
 
   const modules = {
     toolbar: [
@@ -88,8 +106,23 @@ const handledelete = async (e) => {
     ],
   };
 
+  if (loading) {
+    return (
+      <div className="container mt-4 text-center">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading post...</span>
+        </div>
+        <p>Loading post...</p>
+      </div>
+    );
+  }
+
   if (!uPost) {
-    return <div>Loading...</div>; 
+    return (
+      <div className="container mt-4 text-center">
+        <p>Post data not available. Please refresh or login again.</p>
+      </div>
+    );
   }
 
   return (
@@ -100,17 +133,21 @@ const handledelete = async (e) => {
           <div className="upload-image-container position-relative">
             {newPost.img ? (
               <img
-              src={
-                newPost.img instanceof File
-                  ? URL.createObjectURL(newPost.img)
-                  : newPost.img?.startsWith("http")
-                  ? newPost.img
-                  : `https://localhost-blog.onrender.com${newPost.img?.startsWith("/") ? newPost.img : "/" + newPost.img}`
-              }
-              alt="Featured"
-              className="w-100 img-fluid"
-              style={{ maxHeight: "400px", objectFit: "cover" }}
-            />            
+                src={
+                  newPost.img instanceof File
+                    ? URL.createObjectURL(newPost.img)
+                    : newPost.img?.startsWith("http")
+                    ? newPost.img
+                    : `https://localhost-blog.onrender.com${
+                        newPost.img?.startsWith("/")
+                          ? newPost.img
+                          : "/" + newPost.img
+                      }`
+                }
+                alt="Featured"
+                className="w-100 img-fluid"
+                style={{ maxHeight: "400px", objectFit: "cover" }}
+              />
             ) : (
               <div className="upload-placeholder text-center py-5">
                 <label className="btn btn-outline-secondary">
@@ -177,7 +214,6 @@ const handledelete = async (e) => {
             </select>
           </div>
 
-          {/* Publish Toggle */}
           {/* Publish Toggle and Buttons */}
           <div className="p-4 d-flex flex-column flex-md-row justify-content-between align-items-center">
             <div className="form-check mb-3 mb-md-0">
@@ -198,7 +234,6 @@ const handledelete = async (e) => {
               </label>
             </div>
 
-            {/* Buttons Wrapper */}
             <div className="d-flex gap-3">
               <button
                 type="submit"

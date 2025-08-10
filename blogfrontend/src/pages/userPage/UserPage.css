@@ -1,5 +1,5 @@
 .card-columns {
-  column-count: 1; 
+  column-count: 1;
   column-gap: 1rem;
 
   @media (min-width: 576px) {
@@ -31,4 +31,9 @@
 
 .card-columns .card {
   width: 100%;
+}
+.ql-editor {
+  line-height: 1.2 !important; /* default is ~1.5-1.6, reduce for tighter lines */
+  padding: 8px 12px !important; /* adjust padding as needed */
+  min-height: 150px !important; /* you can reduce min height if too tall */
 }

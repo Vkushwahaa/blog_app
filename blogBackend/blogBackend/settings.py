@@ -9,9 +9,27 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
+from decouple import config
+
+import dj_database_url
 
 from pathlib import Path
 from datetime import timedelta
+
+import cloudinary
+import os
+import cloudinary.uploader
+import cloudinary.api
+
+
+cloudinary.config(
+    cloud_name=config("CLOUDINARY_CLOUD_NAME"),
+    api_key=config("CLOUDINARY_API_KEY"),
+    api_secret=config("CLOUDINARY_API_SECRET")
+)
+
+
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,7 +39,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-from decouple import config
 
 SECRET_KEY = config("SECRET_KEY")
 
@@ -29,7 +46,6 @@ SECRET_KEY = config("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-import os
 
 MEDIA_ROOT = BASE_DIR / 'media'  # Ensure this is correc
 MEDIA_URL = '/media/'
@@ -56,7 +72,9 @@ INSTALLED_APPS = [
     
     'django_filters',
 
+    'cloudinary',
 
+    'cloudinary_storage',
     
     "auths.apps.AuthsConfig",
         'django_bleach',
@@ -177,12 +195,22 @@ WSGI_APPLICATION = "blogBackend.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.sqlite3",
+#         "NAME": BASE_DIR / "db.sqlite3",
+#     }
+# }
+
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
+    'default': dj_database_url.config(
+        default=config("DATABASE_URL"),
+        conn_max_age=600,
+        ssl_require=True
+    )
 }
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 
 # Password validation
@@ -224,13 +252,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-STATICFILES_DIRS = [BASE_DIR / 'static']
+# STATICFILES_DIRS = [BASE_DIR / 'static']
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
 
-# Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
@@ -241,14 +268,13 @@ CORS_ALLOWED_ORIGINS = [
     "https://localhost-blog.onrender.com"
 ]
 
-# Good security practice
 CORS_ALLOWED_ORIGIN_REGEXES = [
     r"^https://[\w-]+\.onrender\.com$",
     r"^https://[\w-]+-localhost-blog\.onrender\.com$"
 ]
 
 
-CORS_ALLOW_CREDENTIALS = True  # Set to False if not using authentication
+CORS_ALLOW_CREDENTIALS = True  
 
 CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
 
@@ -260,11 +286,13 @@ CORS_ALLOW_HEADERS = [
 ]
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 USE_X_FORWARDED_HOST = True
-CORS_ALLOW_CREDENTIALS = True  # Only if using cookies/auth
+CORS_ALLOW_CREDENTIALS = True 
 
 
 ALLOWED_HOSTS = [
     "localhost-blog.onrender.com",
     "blog-app-six-ivory.vercel.app",
-    "localhost"
+    "localhost",
+    "127.0.0.1",
+    ".onrender.com"
 ]

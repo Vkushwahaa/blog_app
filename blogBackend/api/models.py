@@ -4,19 +4,26 @@ from django.contrib.auth import get_user_model
 from django_bleach.models import BleachField
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from cloudinary.models import CloudinaryField
+
+DEFAULT_IMG = "https://res.cloudinary.com/ddwinmcui/image/upload/v1754761518/avatar-default_juyaap.svg"
 
 def validate_image(value):
-    if not value.name.endswith(('.jpg', '.jpeg', '.png')):
+    if not value.name.endswith(('.jpg', '.jpeg', '.png','.svg')):
         raise ValidationError("Only image files are allowed.")
     return value
 
+
 class Author(models.Model):
-    user  = models.OneToOneField(get_user_model(), unique=True,on_delete=models.CASCADE)
-    bio   = models.TextField(blank=True,max_length=255)    
-    img   = models.ImageField(upload_to='author_images/',default='author_images/default.jpg', validators=[validate_image])
+    user  = models.OneToOneField(get_user_model(), unique=True, on_delete=models.CASCADE)
+    bio   = models.TextField(blank=True, max_length=255)
+    img = CloudinaryField(
+    'image',
+    
+)
+
     def __str__(self):
         return self.user.username
-    
 
     
 
@@ -30,10 +37,11 @@ class Category(models.Model):
 
 
     
+
 class Post(models.Model):
     author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name="post")
     title = models.CharField(max_length=100, blank=False)
-    img   = models.ImageField(upload_to='post_images/', blank=True, null=True,  validators=[validate_image])
+    img = CloudinaryField('image', blank=True, null=True, default=None)
 
     body = BleachField(
         allowed_tags=settings.BLEACH_ALLOWED_TAGS,
@@ -61,4 +69,4 @@ class Comment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
-        return self.body[0:50]
+        return self.body[:50] if self.body else ""

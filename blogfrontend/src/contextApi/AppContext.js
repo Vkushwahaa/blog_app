@@ -16,8 +16,6 @@ export const AppProvider = ({ children }) => {
   let { authTokens, user } = useContext(AuthContext);
   let navigate = useNavigate();
 
-
-
   const [post, setPost] = useState("");
 
   const [categories, setCategories] = useState([]);
@@ -30,28 +28,60 @@ export const AppProvider = ({ children }) => {
   const getAuthor = useCallback(async (id) => {
     try {
       const response = await fetch(
-        `https://localhost-blog.onrender.com/api/authors/?id=${id}`
+        `http://127.0.0.1:8000/api/authors/?id=${id}`
       );
       if (!response.ok) {
         throw new Error(`Error: ${response.status}`);
       }
       const data = await response.json();
       setAuthor(data);
-      console.log("author", data);
+      console.log("author data from appcontext 38 line", data);
     } catch (error) {
       console.error("Error fetching author:", error);
     }
   }, []);
 
+  // useEffect(() => {
+  //   if (user?.user_id) {
+  //     // Fetch Author using user_id
+  //     fetch(`http://127.0.0.1:8000/api/authors/?user=${user?.username}`)
+  //       .then((res) => res.json())
+  //       .then((data) => {
+  //         if (Array.isArray(data) && data.length > 0) {
+  //           setAuthor(data[0]); // store the author object
+  //         } else {
+  //           console.warn("No author found for user");
+  //         }
+  //       });
+  //   }
+  // }, [user]);
+
   const [postResults, setPostResults] = useState([]);
 
   const searchPosts = useCallback(async (searchTerm) => {
+    if (!searchTerm || searchTerm.trim() === "") {
+      // Clear results or do nothing if search term is empty
+      setPostResults([]);
+      return { success: false, message: "No search term provided." };
+    }
+
     try {
       const response = await fetch(
-        `https://localhost-blog.onrender.com/api/posts?title=${searchTerm}&published=True` // Added 'status=published'
+        `http://127.0.0.1:8000/api/posts/?title=${encodeURIComponent(
+          searchTerm
+        )}&published=True`
       );
-      if (!response.ok) throw new Error("Failed to fetch posts");
+
       const data = await response.json();
+
+      if (!response.ok) {
+        console.warn("Backend returned error:", data);
+        setPostResults([]);
+        return {
+          success: false,
+          message: data.detail || "Something went wrong.",
+        };
+      }
 
       setPostResults((prevResults) => {
         if (JSON.stringify(prevResults) === JSON.stringify(data)) {
@@ -59,9 +89,12 @@ export const AppProvider = ({ children }) => {
         }
         return data;
       });
+
+      return { success: true };
     } catch (error) {
-      console.error("Error searching posts:", error);
+      console.error("Network or parsing error:", error);
       setPostResults([]);
+      return { success: false, message: "Network error. Please try again." };
     }
   }, []);
 
@@ -77,8 +110,8 @@ export const AppProvider = ({ children }) => {
     }
 
     try {
-      const response = await fetch(`https://localhost-blog.onrender.com/api/author/edit/`, {
-        method: "PUT",
+      const response = await fetch(`http://127.0.0.1:8000/api/author/edit/`, {
+        method: "PATCH",
         headers: {
           Authorization: `Bearer ${authTokens?.access}`,
         },
@@ -89,52 +122,59 @@ export const AppProvider = ({ children }) => {
         const errorData = await response.json();
         console.error("Error updating author info:", errorData);
       } else {
-        const updatedAuthor = await response.json();
-        console.log("Author updated successfully:", updatedAuthor);
+        await getAuthor(user.user_id);
+        console.log("Author updated successfully");
       }
     } catch (error) {
       console.error("Error updating author info:", error);
     }
   };
 
-  const editBio = useCallback(async (bio) => {
-    try {
-      const response = await fetch(`https://localhost-blog.onrender.com/api/author/edit/`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${authTokens.access}`,
-        },
-        body: JSON.stringify(bio),
-      });
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
+  const editBio = useCallback(
+    async (bio) => {
+      if (!authTokens?.access) {
+        console.error("No auth token found. User might not be logged in.");
+        return;
       }
-      const data = await response.json();
-      setAuthor(data);
-    } catch (error) {
-      console.error("Error editing bio:", error);
-    }
-  }, []);
+
+      try {
+        const response = await fetch(`http://127.0.0.1:8000/api/author/edit/`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authTokens.access}`,
+          },
+          body: JSON.stringify(bio),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status}`);
+        }
+
+        // ✅ Refresh author after update
+        await getAuthor(user.user_id);
+      } catch (error) {
+        console.error("Error editing bio:", error);
+      }
+    },
+    [authTokens, user, getAuthor]
+  );
 
   const [userPost, setUserPost] = useState([]);
   const [hasMorePost, setHasMorePost] = useState(true);
   const [nextPostPage, setNextPostPage] = useState(null);
   const [loadingPost, setLoadingPost] = useState(false);
+  const [postSeenByAnyone, setPostSeenByAnyone] = useState([]);
 
-  const getUserPostList = useCallback(
+  const getPublicUserPosts = useCallback(
     async (id) => {
       if (!hasMorePost || loadingPost) return;
 
       setLoadingPost(true);
       try {
-        const response = await fetch(
-          nextPostPage || `https://localhost-blog.onrender.com/api/userpost/?id=${id}`,
-          {
-            method: "GET",
-            headers: { Authorization: `Bearer ${authTokens?.access}` },
-          }
-        );
+        const url =
+          nextPostPage || `http://127.0.0.1:8000/api/posts/?author_id=${id}`;
+        const response = await fetch(url);
         const data = await response.json();
 
         if (response.status === 200) {
@@ -148,8 +188,54 @@ export const AppProvider = ({ children }) => {
           setHasMorePost(!!data.next);
         }
       } catch (error) {
-        console.error("Error fetching user posts:", error);
+        console.error("Error fetching public posts:", error);
       }
+      setLoadingPost(false);
+    },
+    [hasMorePost, loadingPost, nextPostPage]
+  );
+
+  const getUserPostList = useCallback(
+    async (id, isAuthor) => {
+      if (!hasMorePost || loadingPost) return;
+
+      setLoadingPost(true);
+
+      try {
+        let url;
+        let options = {};
+
+        if (isAuthor && authTokens?.access) {
+          // Authenticated author - call /userpost endpoint with auth headers
+          url = nextPostPage || `http://127.0.0.1:8000/api/userpost/?id=${id}`;
+          options = {
+            method: "GET",
+            headers: { Authorization: `Bearer ${authTokens.access}` },
+          };
+        } else {
+          // Public view - call /post endpoint without auth headers
+          url =
+            nextPostPage || `http://127.0.0.1:8000/api/post/?author_id=${id}`;
+          options = { method: "GET" };
+        }
+
+        const response = await fetch(url, options);
+        const data = await response.json();
+
+        if (response.status === 200) {
+          setUserPost((prevPosts) => [
+            ...prevPosts,
+            ...data.results.filter(
+              (newPost) => !prevPosts.some((post) => post.id === newPost.id)
+            ),
+          ]);
+          setNextPostPage(data.next);
+          setHasMorePost(!!data.next);
+        }
+      } catch (error) {
+        console.error("Error fetching posts:", error);
+      }
+
       setLoadingPost(false);
     },
     [authTokens, hasMorePost, loadingPost, nextPostPage]
@@ -157,7 +243,7 @@ export const AppProvider = ({ children }) => {
 
   const loadMoreUserPost = useCallback(() => {
     if (!loadingPost && hasMorePost && nextPostPage) {
-      getUserPostList(user?.id);
+      getUserPostList(user?.user_id);
     }
   }, [loadingPost, hasMorePost, nextPostPage, getUserPostList, user?.id]);
 
@@ -191,11 +277,10 @@ export const AppProvider = ({ children }) => {
     return () => window.removeEventListener("scroll", debounceScroll);
   }, [loadMoreUserPost, hasMorePost, loadingPost]);
 
-
   const getPost = useCallback(async (id) => {
     try {
       const response = await fetch(
-        `https://localhost-blog.onrender.com/api/post/${id}?published=true`
+        `http://127.0.0.1:8000/api/post/${id}?published=true`
       );
       const data = await response.json();
       if (response.status === 200) {
@@ -211,7 +296,7 @@ export const AppProvider = ({ children }) => {
   const getPostUpdate = useCallback(
     async (id) => {
       try {
-        const response = await fetch(`https://localhost-blog.onrender.com/api/post/${id}`, {
+        const response = await fetch(`http://127.0.0.1:8000/api/post/${id}`, {
           headers: {
             Authorization: `Bearer ${authTokens?.access}`, // If using JWT authentication
           },
@@ -237,7 +322,7 @@ export const AppProvider = ({ children }) => {
   //fetch categories
   const getCategories = useCallback(async () => {
     try {
-      const response = await fetch("https://localhost-blog.onrender.com/api/category", {
+      const response = await fetch("http://127.0.0.1:8000/api/category", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -269,7 +354,7 @@ export const AppProvider = ({ children }) => {
           ? "?published=True"
           : "?published=True"; // Add this filter to exclude unpublished posts
         const response = await fetch(
-          `https://localhost-blog.onrender.com/api/search?category=${category}&${query}`,
+          `http://127.0.0.1:8000/api/search?category=${category}&${query}`,
           {
             method: "GET",
             headers: { "Content-Type": "application/json" },
@@ -290,7 +375,7 @@ export const AppProvider = ({ children }) => {
   const getComments = useCallback(async (postId) => {
     try {
       const response = await fetch(
-        `https://localhost-blog.onrender.com/api/post/${postId}/comments/?published=true` // Filter comments based on post published status
+        `http://127.0.0.1:8000/api/post/${postId}/comments/?published=true` // Filter comments based on post published status
       );
       const data = await response.json();
       setComment(data);
@@ -302,7 +387,7 @@ export const AppProvider = ({ children }) => {
   const fetchDrafts = async () => {
     try {
       const response = await fetch(
-        "https://localhost-blog.onrender.com/api/posts/?published=false",
+        "http://127.0.0.1:8000/api/posts/?published=false",
         {
           headers: {
             Authorization: `Bearer ${authTokens.access}`,
@@ -325,86 +410,88 @@ export const AppProvider = ({ children }) => {
   // ---------------------------------------------------POST-----------------------------------------------------------------------------------
   let [newComment, setNewComment] = useState("");
 
-  const createPost = useCallback(
-    async (newPost) => {
-      console.log("Payload being sent:", newPost);
+  const createPost = async (postData) => {
+    let bodyToSend;
+    let headers = {
+      Authorization: `Bearer ${authTokens?.access}`,
+    };
 
+    if (postData.img) {
+      // Send as multipart/form-data
+      bodyToSend = new FormData();
+      bodyToSend.append("title", postData.title);
+      bodyToSend.append("body", postData.body);
+      bodyToSend.append("category", postData.category);
+      bodyToSend.append("published", postData.published);
+      bodyToSend.append("img", postData.img);
+      // Don't set Content-Type manually; browser will do it
+    } else {
+      // Send as JSON
+      bodyToSend = JSON.stringify(postData);
+      headers["Content-Type"] = "application/json";
+    }
+
+    try {
+      const response = await fetch(`http://127.0.0.1:8000/api/post/create/`, {
+        method: "POST",
+        headers,
+        body: bodyToSend,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Post created successfully:", data);
+      return data;
+    } catch (error) {
+      console.error("Error creating post:", error);
+      throw error;
+    }
+  };
+
+  const updatePost = useCallback(
+    async (updatedPost, postId) => {
       try {
         const formData = new FormData();
-        formData.append("title", newPost.title);
-        formData.append("body", newPost.body);
-        formData.append("category", newPost.category);
-        formData.append("published", newPost.published);
-        formData.append("author", user?.username);
-
-        if (newPost.img) {
-          formData.append("img", newPost.img);
+        formData.append("title", updatedPost.title);
+        formData.append("body", updatedPost.body);
+        formData.append("category", updatedPost.category);
+        formData.append("published", updatedPost.published);
+        if (updatedPost.img instanceof File) {
+          formData.append("img", updatedPost.img);
         }
 
-        const response = await fetch(`https://localhost-blog.onrender.com/api/post/create/`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${authTokens?.access}`,
-          },
-          body: formData,
-        });
+        const response = await fetch(
+          `http://127.0.0.1:8000/api/post/${postId}/update/`,
+          {
+            method: "PUT",
+            headers: {
+              Authorization: `Bearer ${authTokens?.access}`,
+            },
+            body: formData,
+          }
+        );
 
         if (!response.ok) {
           const errorData = await response.json();
-          console.error("Error response from backend:", errorData);
+          console.error("Error updating post:", errorData);
         } else {
-          console.log("Post created successfully!");
-          navigate('/')
+          console.log("Post updated successfully!");
+          navigate("/"); // Navigate after refreshing the list
         }
       } catch (error) {
-        console.error("Error creating post:", error);
+        console.error("Error updating post:", error);
       }
     },
-    [authTokens, user,]
+    [authTokens, navigate]
   );
-
-const updatePost = useCallback(
-  async (updatedPost, postId) => {
-    try {
-      const formData = new FormData();
-      formData.append("title", updatedPost.title);
-      formData.append("body", updatedPost.body);
-      formData.append("category", updatedPost.category);
-      formData.append("published", updatedPost.published);
-      if (updatedPost.img instanceof File) {
-        formData.append("img", updatedPost.img);
-      }
-
-      const response = await fetch(
-        `https://localhost-blog.onrender.com/api/post/${postId}/update/`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${authTokens?.access}`,
-          },
-          body: formData,
-        }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Error updating post:", errorData);
-      } else {
-        console.log("Post updated successfully!");
-        navigate("/"); // Navigate after refreshing the list
-      }
-    } catch (error) {
-      console.error("Error updating post:", error);
-    }
-  },
-  [authTokens, navigate]
-);
-
 
   const deletePost = useCallback(
     async (id) => {
       try {
-        await fetch(`https://localhost-blog.onrender.com/api/post/${id}/delete/`, {
+        await fetch(`http://127.0.0.1:8000/api/post/${id}/delete/`, {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
@@ -424,7 +511,7 @@ const updatePost = useCallback(
     async (newBody, postId) => {
       try {
         const response = await fetch(
-          `https://localhost-blog.onrender.com/api/post/${postId}/comment/create/`,
+          `http://127.0.0.1:8000/api/post/${postId}/comment/create/`,
           {
             method: "POST",
             headers: {
@@ -436,7 +523,6 @@ const updatePost = useCallback(
         );
         await response.json();
         await getComments(postId);
-
       } catch (error) {
         console.error("Error creating comment:", error);
       }
@@ -448,7 +534,7 @@ const updatePost = useCallback(
     async (postId, editingCommentId, updatedBody) => {
       try {
         const response = await fetch(
-          `https://localhost-blog.onrender.com/api/post/${postId}/comment/${editingCommentId}/update/`,
+          `http://127.0.0.1:8000/api/post/${postId}/comment/${editingCommentId}/update/`,
           {
             method: "PUT",
             headers: {
@@ -468,14 +554,14 @@ const updatePost = useCallback(
         console.error("Error updating comment:", error);
       }
     },
-    [authTokens?.access, getComments, getPost,]
+    [authTokens?.access, getComments, getPost]
   );
 
   const deleteComment = useCallback(
     async (postId, id) => {
       try {
         const response = await fetch(
-          `https://localhost-blog.onrender.com/api/post/${postId}/comment/${id}/delete/`,
+          `http://127.0.0.1:8000/api/post/${postId}/comment/${id}/delete/`,
           {
             method: "DELETE",
             headers: {
@@ -494,7 +580,7 @@ const updatePost = useCallback(
         console.error("Error deleting comment:", error);
       }
     },
-    [authTokens?.access, getPost,navigate]
+    [authTokens?.access, getPost, navigate]
   );
   const contextData = useMemo(
     () => ({
@@ -503,7 +589,7 @@ const updatePost = useCallback(
       getAuthor,
       author,
       editBio,
-  
+
       post,
       updatePost,
       getUserPostList,
@@ -527,6 +613,8 @@ const updatePost = useCallback(
       uPost,
       getPostUpdate,
       updateAuthorImage,
+      postSeenByAnyone,
+      getPublicUserPosts,
     }),
     [
       postResults,

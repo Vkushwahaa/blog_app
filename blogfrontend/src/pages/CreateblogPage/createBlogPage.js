@@ -54,7 +54,9 @@ const CreateBlogPage = () => {
         published: false,
         img: null,
       });
+
       setErrors({});
+      navigate("/");
     } catch (error) {
       console.error("Error creating post:", error);
     }
@@ -154,7 +156,6 @@ const CreateBlogPage = () => {
               ))}
             </select>
             {errors.category && (
-              
               <div className="invalid-feedback">{errors.category}</div>
             )}
           </div>

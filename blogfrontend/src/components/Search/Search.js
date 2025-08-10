@@ -1,8 +1,8 @@
 import { useCallback, useContext, useState } from "react";
 import AppContext from "../../contextApi/AppContext";
 import { Link } from "react-router-dom";
-import { debounce } from "lodash"; 
-import "./Search.css"; 
+import { debounce } from "lodash";
+import "./Search.css";
 
 const Search = () => {
   const { categories, searchPosts, searchPost, postResults, searchResult } =
@@ -23,7 +23,7 @@ const Search = () => {
     const value = e.target.value;
     setPostSearchTerm(value);
     debouncedSearchPosts(value);
-    setIsCategorySearch(false); 
+    setIsCategorySearch(false);
   };
 
   const handleCategorySearch = (categoryName) => {
@@ -66,15 +66,19 @@ const Search = () => {
                   <div className="card shadow-lg rounded" key={post.id}>
                     {post.img ? (
                       <img
-                      src={
-                        post.img?.startsWith("http")
-                          ? post.img
-                          : `https://localhost-blog.onrender.com${post.img?.startsWith("/") ? post.img : "/" + post.img}`
-                      }
-                      alt={post.title || "Post Image"}
-                      className="w-100 img-fluid rounded"
-                      style={{ maxHeight: "350px", objectFit: "cover" }}
-                    />                    
+                        src={
+                          post.img?.startsWith("http")
+                            ? post.img
+                            : `http://127.0.0.1:8000${
+                                post.img?.startsWith("/")
+                                  ? post.img
+                                  : "/" + post.img
+                              }`
+                        }
+                        alt={post.title || "Post Image"}
+                        className="w-100 img-fluid rounded"
+                        style={{ maxHeight: "350px", objectFit: "cover" }}
+                      />
                     ) : (
                       <div style={{ height: "10px" }}></div>
                     )}

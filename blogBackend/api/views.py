@@ -1,5 +1,5 @@
 from rest_framework.response import Response
-from rest_framework.decorators import api_view,permission_classes
+from rest_framework.decorators import api_view,permission_classes,parser_classes
 from .models import Author,Category,Post,Comment
 from .serializers import AuthorSerializer,PostSerializer,CommentSerializer,CategorySerializer,PostListSerializer
 from rest_framework import status
@@ -7,12 +7,13 @@ from rest_framework.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from rest_framework.pagination import PageNumberPagination
 from .filters import PostFilter
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated,AllowAny
 from django.db.models import Q
 from rest_framework.parsers import MultiPartParser, FormParser
 from .utils import get_author
 #home
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def home(request):
     data = {
         "message": "Welcome to the API",
@@ -61,6 +62,7 @@ def getAuthor(request):
 
 
 @api_view(["GET"])
+@permission_classes([AllowAny])
 def getAuthors(request):
     author_id = request.GET.get('id')  
     author_name = request.GET.get('user', '').strip()  # Get and strip whitespace
@@ -84,6 +86,7 @@ def getAuthors(request):
             return Response({"error": "No authors found."}, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(["GET"])
+@permission_classes([AllowAny])
 def getPosts(request):
     post_id = request.GET.get('id')  
     post_title = request.GET.get('title', '').strip()  # Get and strip whitespace
@@ -100,48 +103,35 @@ def getPosts(request):
             return Response({"error": "Post not found or not published."}, status=status.HTTP_404_NOT_FOUND)
     
     elif post_title:
-        # Perform partial and exact match search on post titles, filtering by published posts
-        posts = Post.objects.filter(
-            Q(title__icontains=post_title),  # Partial match (case-insensitive)
-            Q(published=True)  # Only fetch published posts
-        )
-        if posts.exists():
-            serializer = PostSerializer(posts, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        else:
-            return Response({"error": "No published posts found."}, status=status.HTTP_404_NOT_FOUND)
+        posts = Post.objects.filter(title__icontains=post_title, published=True)
+        serializer = PostSerializer(posts, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
+ 
     return Response({"error": "No search parameters provided."}, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(["PUT"])
+
+@api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 def editbio(request):
-    """
-    Update the bio and/or image for the logged-in user.
-    """
-    author = get_author(request.user)
-    
-    # Use MultiPartParser to handle the image upload
-    parser_classes = [MultiPartParser, FormParser]
-    
-    # Get data and files separately
-    data = request.data
-    files = request.FILES
+    try:
+        user = request.user
+        author = Author.objects.get(user=user)
 
-    # Initialize the serializer to update the author instance
-    serializer = AuthorSerializer(instance=author, data=data, partial=True)
+        bio = request.data.get("bio")
+        if bio is not None:
+            author.bio = bio
 
-    if serializer.is_valid():
-        # If the request contains a new image, update the profile image
-        if 'img' in files:
-            author.img = files['img']
-        
-        # Save the updated author instance
-        serializer.save()
-        
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    else:
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if "img" in request.FILES:
+            author.img = request.FILES["img"]
+
+        author.save()
+        return Response({"message": "Profile updated successfully"})
+    except Exception as e:
+        import traceback
+        print(traceback.format_exc())
+        return Response({"error": str(e)}, status=500)
+
 
 # @api_view(["PUT"])
 # def editbio(request):
@@ -159,6 +149,7 @@ def editbio(request):
 # post api view
     
 @api_view(["GET"])
+@permission_classes([AllowAny])
 def getPost(request, pk):
     # Get the post or return a 404 if not found
     post = get_object_or_404(Post, id=pk)
@@ -181,22 +172,21 @@ def getPost(request, pk):
     })
     
 @api_view(["GET"])
-def getUserPost(request, pk):
-    # Get the post or return a 404 if not found
-    post = get_object_or_404(Post, id=pk)
+def getUserPost(request):
+    pk = request.GET.get('id')
+    if not pk:
+        return Response({"post": {}, "comments": []}, status=200)
 
-    # Check if the user is authenticated and if the user is the author
-    if request.user.is_authenticated:
-        if post.author != request.user:
-            return Response({"detail": "You do not have permission to view this post."}, 
-                            status=status.HTTP_403_FORBIDDEN)
-    else:
-        # Check if the post is published if the user is not authenticated
+    try:
+        post = Post.objects.get(id=pk)
+    except Post.DoesNotExist:
+        return Response({"post": {}, "comments": []}, status=200)
+
+    # Fail-safe for unauthenticated or not owner
+    if not request.user.is_authenticated or post.author.user != request.user:
         if not post.published:
-            return Response({"detail": "Post is not published and you are not authenticated."}, 
-                            status=status.HTTP_403_FORBIDDEN)
+            return Response({"post": {}, "comments": []}, status=200)
 
-    # If the user is the author or the post is published, return the post and comments
     comments = post.comment.all()
     post_serializer = PostSerializer(post)
     comment_serializer = CommentSerializer(comments, many=True)
@@ -205,6 +195,8 @@ def getUserPost(request, pk):
         'post': post_serializer.data,
         'comments': comment_serializer.data
     })
+
+
 
 
 @api_view(["POST"])
@@ -219,21 +211,27 @@ def createBio(request):
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, FormParser])
 def createPost(request):
-    """
-    Create a new post
-    """
-    author = get_author(request.user)  # Retrieve the author instance
-    serializer = PostSerializer(data=request.data)  # Pass only request.data to the serializer
+    author = get_author(request.user)
+    serializer = PostSerializer(data=request.data)
 
     if serializer.is_valid():
-        serializer.save(author=author)  # Save the post with the associated author
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    
+        try:
+            post = serializer.save(author=author)
+            return Response(PostSerializer(post).data, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            import traceback
+            traceback.print_exc()  # full traceback in console
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    print(serializer.errors)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-  
+
+
 @api_view(["PUT"])
 @permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, FormParser])  
 def updatePost(request, pk):
     """Update an existing post"""
     author = get_author(request.user)
@@ -260,26 +258,36 @@ def deletePost(request,pk):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])  
 def getUserPostlist(request):
-    # Get the logged-in user's associated Author instance
     user_id = request.GET.get('id')
-    author = Author.objects.get(id=user_id)
+    if not user_id:
+        return Response({"detail": "User ID required"}, status=400)
 
-    # Filter posts authored by the logged-in user
-    posts = Post.objects.filter(author=author)
+    # Check if the requested user ID matches logged in user
+    is_author = str(request.user.id) == str(user_id)
 
-    # Paginate the filtered results
+    if is_author:
+        posts = Post.objects.filter(author__user__id=user_id)
+    else:
+        # If not author, only published posts
+        posts = Post.objects.filter(author__user__id=user_id, published=True)
+
     paginator = PageNumberPagination()
     paginator.page_size = 10
     result_page = paginator.paginate_queryset(posts, request)
-
-    # Serialize and return the paginated data
     serializer = PostListSerializer(result_page, many=True)
     return paginator.get_paginated_response(serializer.data)
 
 @api_view(["GET"])
+@permission_classes([AllowAny])
 def getPostlist(request):
-    post_filter = PostFilter(request.GET, queryset=Post.objects.all())
+    author_id = request.GET.get('author_id', None)
+    queryset = Post.objects.filter(published=True)
+    if author_id:
+        queryset = queryset.filter(author__user__id=author_id)
+
+    post_filter = PostFilter(request.GET, queryset=queryset)
     posts = post_filter.qs
+
     paginator = PageNumberPagination()
     paginator.page_size = 10
     result_page = paginator.paginate_queryset(posts, request)
@@ -288,6 +296,7 @@ def getPostlist(request):
 
 # comment api view
 @api_view(["GET"])
+@permission_classes([AllowAny])
 def getComments(request,pk):
     post       = get_object_or_404(Post,id=pk)
     comments   = post.comment.filter()
@@ -342,6 +351,7 @@ def deleteComment(request,pk,ck):
 # category views
 
 @api_view(["GET"])
+@permission_classes([AllowAny])
 def getCategorys(request):
     category      = Category.objects.all().order_by("id")
     serializer    = CategorySerializer(category,many=True)
@@ -357,20 +367,26 @@ def createCategory(request):
 # search
 
 @api_view(["GET"])
+@permission_classes([AllowAny])
 def searchPost(request):
-    # Get category name from query params
     category_name = request.GET.get('category')
-    
-    # Ensure category exists or return an error if it doesn't
-    category = get_object_or_404(Category, name=category_name)
 
-    # Filter posts by category
+    if not category_name:
+        # Instead of error, just return empty list
+        return Response([], status=status.HTTP_200_OK)
+
+    category = Category.objects.filter(name=category_name).first()
+    if not category:
+        return Response([], status=status.HTTP_200_OK)
+
     posts = Post.objects.filter(category=category)
-    
-    # If the user is not authenticated, filter to show only published posts
     if not request.user.is_authenticated:
         posts = posts.filter(published=True)
 
-    # Serialize posts and return the response
+    if not posts.exists():
+        return Response([], status=status.HTTP_200_OK)
+
     serializer = PostSerializer(posts, many=True)
-    return Response(serializer.data)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+

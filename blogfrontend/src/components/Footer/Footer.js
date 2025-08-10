@@ -1,4 +1,3 @@
-
 import React from "react";
 
 const Footer = () => {
@@ -9,7 +8,8 @@ const Footer = () => {
           &copy; {new Date().getFullYear()} localhost
           <span className="text-danger" style={{ fontWeight: "700" }}>
             :
-          </span>{""}
+          </span>
+          {""}
           blog. All rights reserved.
         </span>
         <br />

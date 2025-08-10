@@ -16,8 +16,6 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         return token
     
-    
-
 class RegisterSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(
         required=True, 
@@ -28,18 +26,19 @@ class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('username', 'password', 'email', 'first_name', 'last_name')
-        extra_kwargs = {'first_name': {'required': True}, 'last_name': {'required': True}}
+        extra_kwargs = {
+            'first_name': {'required': True},
+            'last_name': {'required': True},
+        }
 
-    def create(self, validated_data):
-        user = User(
+    def create(self, validated_data): 
+        print("Saving user...")  # Debug print
+        user = User.objects.create_user(
             username=validated_data['username'],
             email=validated_data['email'],
+            password=validated_data['password'],
             first_name=validated_data['first_name'],
             last_name=validated_data['last_name'],
-            is_active=True  # Ensure user is active
         )
-        user.set_password(validated_data['password'])  # Hash the password here
-        user.save()
-        get_author(user)
-
+        get_author(user)  # This could be failing silently — consider printing here too
         return user

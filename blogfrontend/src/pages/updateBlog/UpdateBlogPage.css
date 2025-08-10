@@ -1,9 +1,9 @@
 body {
-  margin-top: 80px; 
+  margin-top: 80px;
 }
 
 .container {
-  max-width: 800px; 
+  max-width: 800px;
 }
 
 .card {
@@ -62,6 +62,11 @@ button:hover {
 .d-flex.gap-3 > button {
   min-width: 120px; /* Ensure consistent button size */
 }
+.ql-editor {
+  line-height: 1.2 !important; /* default is ~1.5-1.6, reduce for tighter lines */
+  padding: 8px 12px !important; /* adjust padding as needed */
+  min-height: 150px !important; /* you can reduce min height if too tall */
+}
 
 @media (max-width: 540px) {
   .container {
@@ -75,9 +80,8 @@ button:hover {
   h1 {
     font-size: 1.5rem;
   }
- .btn1 {
-  padding: 5px 10px;
-  font-size: 0.9rem;
-}
-
+  .btn1 {
+    padding: 5px 10px;
+    font-size: 0.9rem;
+  }
 }

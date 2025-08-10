@@ -23,11 +23,16 @@ const Register = () => {
 
   const validateForm = () => {
     let errors = {};
-    if (formValues.username.trim().length < 3) errors.username = "Username must be at least 3 characters.";
-    if (formValues.password.length < 8) errors.password = "Password must be at least 8 characters.";
-    if (!/\S+@\S+\.\S+/.test(formValues.email)) errors.email = "Invalid email address.";
-    if (formValues.firstName.trim() === "") errors.firstName = "First Name is required.";
-    if (formValues.lastName.trim() === "") errors.lastName = "Last Name is required.";
+    if (formValues.username.trim().length < 3)
+      errors.username = "Username must be at least 3 characters.";
+    if (formValues.password.length < 8)
+      errors.password = "Password must be at least 8 characters.";
+    if (!/\S+@\S+\.\S+/.test(formValues.email))
+      errors.email = "Invalid email address.";
+    if (formValues.firstName.trim() === "")
+      errors.firstName = "First Name is required.";
+    if (formValues.lastName.trim() === "")
+      errors.lastName = "Last Name is required.";
     return errors;
   };
 
@@ -59,7 +64,10 @@ const Register = () => {
       if (response.errors) {
         let backendErrors = {};
         Object.keys(response.errors).forEach((key) => {
-          backendErrors[key] = response.errors[key].join(', ');
+          const errorVal = response.errors[key];
+          backendErrors[key] = Array.isArray(errorVal)
+            ? errorVal.join(", ")
+            : String(errorVal);
         });
         setFormErrors(backendErrors);
       } else {
@@ -67,7 +75,7 @@ const Register = () => {
       }
     } else {
       alert("Registration successful! You can now log in.");
-      window.location.href = '/login';
+      window.location.href = "/login";
     }
   };
 
@@ -80,46 +88,68 @@ const Register = () => {
             <h2 className="text-secondary">
               <span className="text-danger fw-bold">:</span> Blog
             </h2>
-            <p className="mt-4 fs-5 text-muted">Welcome to LocalHost Blog! Connect, share, and inspire.</p>
+            <p className="mt-4 fs-5 text-muted">
+              Welcome to LocalHost Blog! Connect, share, and inspire.
+            </p>
           </div>
         </div>
         <div className="col-lg-4 col-md-8 col-sm-10 mx-auto">
           <div className="card shadow-lg p-4 border-0">
             <form onSubmit={handleRegister}>
-              <h3 className="register-header text-center mb-4 text-primary">Create an Account</h3>
-
+              <h3 className="register-header text-center mb-4 text-primary">
+                Create an Account
+              </h3>
               {/* Global Error Message */}
-              {submissionError && <div className="alert alert-danger">{submissionError}</div>}
-
+              {submissionError && (
+                <div className="alert alert-danger">{submissionError}</div>
+              )}
               {/* Username */}
               <div className="mb-3">
                 <input
                   type="text"
                   name="username"
-                  className={`form-control ${formErrors.username ? "is-invalid" : ""}`}
+                  className={`form-control ${
+                    formErrors.username ? "is-invalid" : ""
+                  }`}
                   placeholder="Username"
                   value={formValues.username}
                   onChange={handleInputChange}
                 />
                 <div className="invalid-feedback">{formErrors.username}</div>
               </div>
-
+              {/* Password */}
               {/* Password */}
               <div className="mb-3">
                 <div className="input-group">
                   <input
                     type={passwordVisible ? "text" : "password"}
                     name="password"
-                    className={`form-control ${formErrors.password ? "is-invalid" : ""}`}
+                    className={`form-control ${
+                      formErrors.password ? "is-invalid" : ""
+                    }`}
                     placeholder="Password"
                     value={formValues.password}
                     onChange={handleInputChange}
+                    aria-describedby="passwordError"
                   />
-                  <button type="button" className="btn btn-outline-secondary" onClick={togglePassword}>
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary"
+                    onClick={togglePassword}
+                    tabIndex={-1}
+                  >
                     {passwordVisible ? <FaEyeSlash /> : <FaEye />}
                   </button>
                 </div>
-                <div className="invalid-feedback">{formErrors.password}</div>
+                {formErrors.password && (
+                  <div
+                    id="passwordError"
+                    className="text-danger mt-1"
+                    style={{ fontSize: "0.95em" }}
+                  >
+                    {formErrors.password}
+                  </div>
+                )}
               </div>
 
               {/* Email */}
@@ -127,52 +157,60 @@ const Register = () => {
                 <input
                   type="email"
                   name="email"
-                  className={`form-control ${formErrors.email ? "is-invalid" : ""}`}
+                  className={`form-control ${
+                    formErrors.email ? "is-invalid" : ""
+                  }`}
                   placeholder="Email"
                   value={formValues.email}
                   onChange={handleInputChange}
                 />
                 <div className="invalid-feedback">{formErrors.email}</div>
               </div>
-
               {/* First Name */}
               <div className="mb-3">
                 <input
                   type="text"
                   name="firstName"
-                  className={`form-control ${formErrors.firstName ? "is-invalid" : ""}`}
+                  className={`form-control ${
+                    formErrors.firstName ? "is-invalid" : ""
+                  }`}
                   placeholder="First Name"
                   value={formValues.firstName}
                   onChange={handleInputChange}
                 />
                 <div className="invalid-feedback">{formErrors.firstName}</div>
               </div>
-
               {/* Last Name */}
               <div className="mb-3">
                 <input
                   type="text"
                   name="lastName"
-                  className={`form-control ${formErrors.lastName ? "is-invalid" : ""}`}
+                  className={`form-control ${
+                    formErrors.lastName ? "is-invalid" : ""
+                  }`}
                   placeholder="Last Name"
                   value={formValues.lastName}
                   onChange={handleInputChange}
                 />
                 <div className="invalid-feedback">{formErrors.lastName}</div>
               </div>
-
               {/* Submit Button */}
-              <button type="submit" className="btn btn-primary w-100">Register</button>
+              <button type="submit" className="btn btn-primary w-100">
+                Register
+              </button>
             </form>
 
             <p className="text-center mt-3">
-              Already have an account? <Link to="/login" className="text-decoration-none">Login</Link>
+              Already have an account?{" "}
+              <Link to="/login" className="text-decoration-none">
+                Login
+              </Link>
             </p>
           </div>
         </div>
       </div>
     </div>
   );
-}
+};
 
 export default Register;
