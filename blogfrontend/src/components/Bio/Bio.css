@@ -5,10 +5,20 @@
   overflow-wrap: break-word;
   white-space: pre-wrap;
 }
-
+.bio-shape {
+  width: 100%;
+}
 .bio-user {
   font-size: 40px;
 }
+.profile-image-wrapper {
+  display: inline-block; /* shrink wrap to image size */
+  padding: 5px; /* space between image and border */
+  background-color: white; /* white strip around */
+  border-radius: 50%; /* make border circular */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* subtle shadow */
+}
+
 @media (max-width: 500px) {
   .bio-image {
     /* Add styles for large screens here */
@@ -20,10 +30,14 @@
   }
 
   .bio-bio {
-    font-size: 10px;
+    font-size: 16px;
     word-wrap: break-word;
     word-break: break-word;
     overflow-wrap: break-word;
     white-space: pre-wrap;
+  }
+  .btn {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.8rem;
   }
 }

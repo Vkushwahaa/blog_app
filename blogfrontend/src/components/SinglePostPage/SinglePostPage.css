@@ -3,6 +3,8 @@
   margin: auto;
   font-family: "Georgia", serif;
   line-height: 1.6;
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
 }
 
 .author-info {
@@ -14,7 +16,7 @@
   border: 2px solid #ddd;
 }
 
-.author-details h2{
+.author-details h2 {
   font-weight: bold;
   color: #222;
 }
@@ -43,7 +45,19 @@
   border-top: 1px solid #ddd;
   padding-top: 1.5rem;
 }
+.ql-editor {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
 
+.author-info.mb-4 {
+  margin-bottom: 1rem !important; /* or a smaller value */
+}
+
+/* Reduce the margin above the post body */
+.post-title.mb-4 {
+  margin-bottom: 1rem !important;
+}
 /* Responsive Styles */
 @media (max-width: 768px) {
   .author-avatar img {

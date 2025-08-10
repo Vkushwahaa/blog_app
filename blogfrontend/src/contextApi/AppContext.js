@@ -34,7 +34,6 @@ export const AppProvider = ({ children }) => {
       }
       const data = await response.json();
       setAuthor(data);
-      console.log("author data from appcontext 38 line", data);
     } catch (error) {
       console.error("Error fetching author:", error);
     }
@@ -308,9 +307,6 @@ export const AppProvider = ({ children }) => {
       const data = await response.json();
       if (response.status === 200) {
         setCategories(data);
-        console.log("API Response:", data);
-
-        console.log("category daata", data);
       }
     } catch (error) {
       console.error("Error fetching categories:", error);
@@ -348,17 +344,20 @@ export const AppProvider = ({ children }) => {
   );
 
   // comments
-  const getComments = useCallback(async (postId) => {
-    try {
-      const response = await fetch(
-        `${API_URL}/api/post/${postId}/comments/?published=true` // Filter comments based on post published status
-      );
-      const data = await response.json();
-      setComment(data);
-    } catch (error) {
-      console.error("Error fetching comments:", error);
-    }
-  }, []);
+  const getComments = useCallback(
+    async (postId) => {
+      try {
+        const response = await fetch(
+          `${API_URL}/api/post/${postId}/comments/?published=true` // Filter comments based on post published status
+        );
+        const data = await response.json();
+        setComment(data);
+      } catch (error) {
+        console.error("Error fetching comments:", error);
+      }
+    },
+    [setComment]
+  );
 
   const fetchDrafts = useCallback(async () => {
     try {
@@ -448,7 +447,6 @@ export const AppProvider = ({ children }) => {
           const errorData = await response.json();
           console.error("Error updating post:", errorData);
         } else {
-          console.log("Post updated successfully!");
           navigate("/"); // Navigate after refreshing the list
         }
       } catch (error) {

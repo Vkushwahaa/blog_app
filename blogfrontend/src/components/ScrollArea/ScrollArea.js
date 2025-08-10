@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./ScrollArea.css";
 import { API_URL } from "../../config";
+import DOMPurify from "dompurify";
 
 const ScrollArea = () => {
   const [posts, setPosts] = useState([]);
@@ -10,14 +11,17 @@ const ScrollArea = () => {
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
 
+  const observerTarget = useRef(null);
+
   const getPostList = useCallback(async () => {
     if (!hasMore || loading) return;
-
     setLoading(true);
+
     try {
       const response = await fetch(
         nextPage || `${API_URL}/api/post/?published=true&order_by=updated_at`
       );
+
       if (response.ok) {
         const data = await response.json();
 
@@ -40,74 +44,95 @@ const ScrollArea = () => {
     }
   }, [hasMore, loading, nextPage]);
 
-  // Fetch posts on component mount
+  // Fetch initial posts
   useEffect(() => {
     getPostList();
   }, [getPostList]);
 
-  // Infinite scroll logic
+  // IntersectionObserver for infinite scroll
+  // IntersectionObserver for infinite scroll
   useEffect(() => {
-    const handleScroll = () => {
-      if (
-        window.innerHeight + document.documentElement.scrollTop + 1 >=
-          document.documentElement.scrollHeight &&
-        hasMore &&
-        !loading
-      ) {
-        getPostList();
-      }
+    const target = observerTarget.current;
+    if (!target) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading) {
+          getPostList();
+        }
+      },
+      { threshold: 1.0 }
+    );
+
+    observer.observe(target);
+
+    return () => {
+      observer.unobserve(target);
     };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
   }, [getPostList, hasMore, loading]);
+
+  // Safe HTML preview function
+  const getPreviewHTML = (html, limit = 150) => {
+    const cleanHTML = DOMPurify.sanitize(html, { ALLOWED_TAGS: [] }); // strip tags
+    const preview =
+      cleanHTML.length > limit
+        ? `${cleanHTML.substring(0, limit)}...`
+        : cleanHTML;
+    return preview;
+  };
 
   return (
     <div className="container mt-5">
-      <div className="card-columns">
-        {posts &&
-          posts
-            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-            .map((post) => (
-              <div className="card shadow-lg rounded" key={post.id}>
+      <div className="row g-4">
+        {[...posts]
+          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+          .map((post) => (
+            <div className="col-12 col-sm-6 col-lg-4" key={post.id}>
+              <div className="card shadow-lg rounded h-100">
                 {post.img ? (
                   <img
                     src={post.img}
                     alt={post.title || "Post Image"}
-                    className="w-100 img-fluid rounded"
-                    style={{ maxHeight: "350px", objectFit: "cover" }}
+                    className="w-100 img-fluid rounded-top"
+                    style={{
+                      maxHeight: "250px",
+                      width: "100%",
+                      objectFit:
+                        post.imgWidth > post.imgHeight ? "contain" : "cover",
+                    }}
                   />
                 ) : (
                   <div style={{ height: "10px" }}></div>
                 )}
-                <div className="card-body">
-                  <h1 className="card-title text-black">{post.title}</h1>
-                  <div
-                    className="card-text ql-editor"
-                    dangerouslySetInnerHTML={{
-                      __html:
-                        post.body.length > 150
-                          ? `${post.body.substring(0, 150)}...`
-                          : post.body,
-                    }}
-                  />
-                  <p className="card-text text-muted mb-2">
+                <div className="card-body d-flex flex-column">
+                  <h5 className="card-title text-black">{post.title}</h5>
+                  <p className="card-text">{getPreviewHTML(post.body)}</p>
+                  <p className="card-text text-muted mb-1">
                     <strong>{post.author.user}</strong>
                   </p>
-                  <p className="card-text text-muted mb-2">
+                  <p className="card-text text-muted mb-3">
                     <small>
                       {new Date(post.created_at).toLocaleDateString()}
                     </small>
                   </p>
                   <Link
                     to={`/${post.id}`}
-                    className="btn btn-outline-black mt-auto"
+                    className="btn btn-outline-dark mt-auto align-self-start"
                   >
                     Read More
                   </Link>
                 </div>
               </div>
-            ))}
+            </div>
+          ))}
       </div>
+
+      {/* IntersectionObserver trigger */}
+      {hasMore && (
+        <div ref={observerTarget} className="text-center my-4">
+          {loading && <div>Loading more...</div>}
+        </div>
+      )}
     </div>
   );
 };

@@ -22,9 +22,10 @@ const SinglePostPage = () => {
     if (post?.author_id && (!author || author.id !== post.author_id)) {
       getAuthor(parseInt(post.author_id));
     }
-    getComments(post.id);
-    console.log("author from singlepostpage", author, "post", post);
-  }, [post, author, getAuthor]);
+    if (post?.id) {
+      getComments(post.id);
+    }
+  }, [post, author, getAuthor, getComments]);
 
   return (
     <div className="container mt-5">

@@ -1,4 +1,4 @@
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Bio from "../../components/Bio/Bio";
 import AppContext from "../../contextApi/AppContext";
@@ -20,7 +20,7 @@ const UserPage = () => {
     setNextPostPage,
     getAuthor,
   } = useContext(AppContext);
-  const { user, author } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
 
   // Function to fetch posts manually
   const handleFetchPosts = async () => {
@@ -34,11 +34,12 @@ const UserPage = () => {
   };
 
   // Reset posts when changing users
-  const resetPosts = () => {
+  const resetPosts = useCallback(() => {
     setUserPost([]);
     setHasMorePost(true);
     setNextPostPage(null);
-  };
+  }, [setUserPost, setHasMorePost, setNextPostPage]);
+
   useEffect(() => {
     resetPosts();
     if (user && user.user_id) {
@@ -46,10 +47,10 @@ const UserPage = () => {
         console.error("Failed to fetch author:", err)
       );
     }
-
-    const isAuthor = user && parseInt(user?.user_id) === parseInt(id);
-    getUserPostList(id, isAuthor);
-  }, [id, user]);
+    // Remove this line to prevent automatic fetch:
+    // const isAuthor = user && parseInt(user?.user_id) === parseInt(id);
+    // getUserPostList(id, isAuthor);
+  }, [id, user, getAuthor, resetPosts]);
 
   // Handle user change (triggered manually)
   const handleUserChange = () => {

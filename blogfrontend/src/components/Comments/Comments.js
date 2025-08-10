@@ -20,12 +20,11 @@ const Comment = ({ postId }) => {
     if (!postId) return;
 
     const fetchComments = async () => {
-      console.log("Fetching comments for postId:", postId);
       await getComments(postId);
     };
 
     fetchComments();
-  }, [postId, Comment]);
+  }, [postId, getComments]);
 
   const handleEditClick = (id, body) => {
     setEditingCommentId(id);

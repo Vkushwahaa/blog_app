@@ -55,7 +55,6 @@ export const AuthProvider = ({ children }) => {
         });
 
         const data = await response.json();
-        console.log("Login Response:", data); // ✅ Debugging step
 
         if (!response.ok) {
           throw new Error(data.detail || "Invalid username or password.");
@@ -95,7 +94,6 @@ export const AuthProvider = ({ children }) => {
     }
 
     try {
-      console.log("Refreshing token...");
       const response = await fetch(`${API_URL}/auths/token/refresh/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -112,7 +110,6 @@ export const AuthProvider = ({ children }) => {
       setAuthTokens(data);
       setUser(jwtDecode(data.access));
       localStorage.setItem("authTokens", JSON.stringify(data));
-      console.log("Token refreshed successfully.");
     } catch (error) {
       console.error("Error refreshing token:", error);
       logoutUser();
@@ -132,9 +129,6 @@ export const AuthProvider = ({ children }) => {
       });
 
       const data = await response.json();
-
-      console.log("API Response:", data);
-
       if (!response.ok) {
         return {
           success: false,
