@@ -263,7 +263,10 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 CORS_ALLOWED_ORIGINS = [
-    "https://blog-app-six-ivory.vercel.app",  
+    "https://blog-app-six-ivory.vercel.app", 
+   "blog-app-vinay-kushwahas-projects-7002aa5b.vercel.app",
+  'https://blog-app-git-main-vinay-kushwahas-projects-7002aa5b.vercel.app',
+  'https://blog-q1o4jl0l4-vinay-kushwahas-projects-7002aa5b.vercel.app', 
     "http://localhost:3000",                
     "https://localhost-blog.onrender.com"
 ]
