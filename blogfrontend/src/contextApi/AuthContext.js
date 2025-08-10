@@ -1,6 +1,7 @@
 import { createContext, useEffect, useState, useCallback } from "react";
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
+import { API_URL } from "../config";
 
 const AuthContext = createContext();
 export default AuthContext;
@@ -44,7 +45,7 @@ export const AuthProvider = ({ children }) => {
       event.preventDefault();
 
       try {
-        const response = await fetch(`http://127.0.0.1:8000/auths/login/`, {
+        const response = await fetch(`${API_URL}/auths/login/`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -95,14 +96,11 @@ export const AuthProvider = ({ children }) => {
 
     try {
       console.log("Refreshing token...");
-      const response = await fetch(
-        `http://127.0.0.1:8000/auths/token/refresh/`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ refresh: authTokens.refresh }),
-        }
-      );
+      const response = await fetch(`${API_URL}/auths/token/refresh/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refresh: authTokens.refresh }),
+      });
 
       if (!response.ok) {
         console.error("Failed to refresh token. Logging out.");
@@ -125,7 +123,7 @@ export const AuthProvider = ({ children }) => {
   }, [authTokens, logoutUser]);
   const registerUser = useCallback(async (userData) => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/auths/register/", {
+      const response = await fetch(`${API_URL}/auths/register/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

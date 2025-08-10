@@ -4,7 +4,7 @@ import AuthContext from "../../contextApi/AuthContext";
 import "./Bio.css";
 const Bio = ({ id, len }) => {
   const { user } = useContext(AuthContext); // User info from authentication context
-  const { author, getAuthor, createBio, editBio, updateAuthorImage } =
+  const { author, getAuthor, editBio, updateAuthorImage } =
     useContext(AppContext); // Get author and bio management functions
   const [editing, setEditing] = useState(false);
   const [bio, setBio] = useState("");

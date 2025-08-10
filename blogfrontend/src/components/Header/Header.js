@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Navbar, Nav, Container, Offcanvas, Image } from "react-bootstrap";
+import { Navbar, Nav, Container, Offcanvas } from "react-bootstrap";
 import AuthContext from "../../contextApi/AuthContext";
 import AppContext from "../../contextApi/AppContext";
 import "bootstrap-icons/font/bootstrap-icons.css"; // Import Bootstrap Icons
@@ -8,7 +8,7 @@ import "./Header.css";
 
 const Header = () => {
   const { user, logoutUser } = useContext(AuthContext);
-  const { author, getAuthor } = useContext(AppContext);
+  const { getAuthor } = useContext(AppContext);
   const [showSidebar, setShowSidebar] = useState(false);
   useEffect(() => {
     if (user) {

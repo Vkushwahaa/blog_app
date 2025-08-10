@@ -7,6 +7,7 @@ import {
   useMemo,
 } from "react";
 import AuthContext from "./AuthContext";
+import { API_URL } from "../config";
 
 import { useNavigate } from "react-router-dom";
 export const AppContext = createContext();
@@ -27,9 +28,7 @@ export const AppProvider = ({ children }) => {
 
   const getAuthor = useCallback(async (id) => {
     try {
-      const response = await fetch(
-        `http://127.0.0.1:8000/api/authors/?id=${id}`
-      );
+      const response = await fetch(`${API_URL}/api/authors/?id=${id}`);
       if (!response.ok) {
         throw new Error(`Error: ${response.status}`);
       }
@@ -40,21 +39,6 @@ export const AppProvider = ({ children }) => {
       console.error("Error fetching author:", error);
     }
   }, []);
-
-  // useEffect(() => {
-  //   if (user?.user_id) {
-  //     // Fetch Author using user_id
-  //     fetch(`http://127.0.0.1:8000/api/authors/?user=${user?.username}`)
-  //       .then((res) => res.json())
-  //       .then((data) => {
-  //         if (Array.isArray(data) && data.length > 0) {
-  //           setAuthor(data[0]); // store the author object
-  //         } else {
-  //           console.warn("No author found for user");
-  //         }
-  //       });
-  //   }
-  // }, [user]);
 
   const [postResults, setPostResults] = useState([]);
 
@@ -67,7 +51,7 @@ export const AppProvider = ({ children }) => {
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/posts/?title=${encodeURIComponent(
+        `${API_URL}/api/posts/?title=${encodeURIComponent(
           searchTerm
         )}&published=True`
       );
@@ -98,37 +82,34 @@ export const AppProvider = ({ children }) => {
     }
   }, []);
 
-  const updateAuthorImage = async (newBio, newImage) => {
-    const formData = new FormData();
+  const updateAuthorImage = useCallback(
+    async (newBio, newImage) => {
+      const formData = new FormData();
+      if (newBio) formData.append("bio", newBio);
+      if (newImage) formData.append("img", newImage);
 
-    if (newBio) {
-      formData.append("bio", newBio);
-    }
+      try {
+        const response = await fetch(`${API_URL}/api/author/edit/`, {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${authTokens?.access}`,
+          },
+          body: formData,
+        });
 
-    if (newImage) {
-      formData.append("img", newImage);
-    }
-
-    try {
-      const response = await fetch(`http://127.0.0.1:8000/api/author/edit/`, {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${authTokens?.access}`,
-        },
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Error updating author info:", errorData);
-      } else {
-        await getAuthor(user.user_id);
-        console.log("Author updated successfully");
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error("Error updating author info:", errorData);
+        } else {
+          await getAuthor(user.user_id);
+          // Optionally: console.log("Author updated successfully");
+        }
+      } catch (error) {
+        console.error("Error updating author info:", error);
       }
-    } catch (error) {
-      console.error("Error updating author info:", error);
-    }
-  };
+    },
+    [authTokens?.access, getAuthor, user?.user_id]
+  );
 
   const editBio = useCallback(
     async (bio) => {
@@ -138,7 +119,7 @@ export const AppProvider = ({ children }) => {
       }
 
       try {
-        const response = await fetch(`http://127.0.0.1:8000/api/author/edit/`, {
+        const response = await fetch(`${API_URL}/api/author/edit/`, {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
@@ -164,7 +145,6 @@ export const AppProvider = ({ children }) => {
   const [hasMorePost, setHasMorePost] = useState(true);
   const [nextPostPage, setNextPostPage] = useState(null);
   const [loadingPost, setLoadingPost] = useState(false);
-  const [postSeenByAnyone, setPostSeenByAnyone] = useState([]);
 
   const getPublicUserPosts = useCallback(
     async (id) => {
@@ -172,8 +152,7 @@ export const AppProvider = ({ children }) => {
 
       setLoadingPost(true);
       try {
-        const url =
-          nextPostPage || `http://127.0.0.1:8000/api/posts/?author_id=${id}`;
+        const url = nextPostPage || `${API_URL}/api/posts/?author_id=${id}`;
         const response = await fetch(url);
         const data = await response.json();
 
@@ -207,15 +186,14 @@ export const AppProvider = ({ children }) => {
 
         if (isAuthor && authTokens?.access) {
           // Authenticated author - call /userpost endpoint with auth headers
-          url = nextPostPage || `http://127.0.0.1:8000/api/userpost/?id=${id}`;
+          url = nextPostPage || `${API_URL}/api/userpost/?id=${id}`;
           options = {
             method: "GET",
             headers: { Authorization: `Bearer ${authTokens.access}` },
           };
         } else {
           // Public view - call /post endpoint without auth headers
-          url =
-            nextPostPage || `http://127.0.0.1:8000/api/post/?author_id=${id}`;
+          url = nextPostPage || `${API_URL}/api/post/?author_id=${id}`;
           options = { method: "GET" };
         }
 
@@ -245,7 +223,7 @@ export const AppProvider = ({ children }) => {
     if (!loadingPost && hasMorePost && nextPostPage) {
       getUserPostList(user?.user_id);
     }
-  }, [loadingPost, hasMorePost, nextPostPage, getUserPostList, user?.id]);
+  }, [loadingPost, hasMorePost, nextPostPage, getUserPostList, user?.user_id]);
 
   useEffect(() => {
     setUserPost([]);
@@ -279,9 +257,7 @@ export const AppProvider = ({ children }) => {
 
   const getPost = useCallback(async (id) => {
     try {
-      const response = await fetch(
-        `http://127.0.0.1:8000/api/post/${id}?published=true`
-      );
+      const response = await fetch(`${API_URL}/api/post/${id}?published=true`);
       const data = await response.json();
       if (response.status === 200) {
         setPost(data.post);
@@ -296,7 +272,7 @@ export const AppProvider = ({ children }) => {
   const getPostUpdate = useCallback(
     async (id) => {
       try {
-        const response = await fetch(`http://127.0.0.1:8000/api/post/${id}`, {
+        const response = await fetch(`${API_URL}/api/post/${id}`, {
           headers: {
             Authorization: `Bearer ${authTokens?.access}`, // If using JWT authentication
           },
@@ -322,7 +298,7 @@ export const AppProvider = ({ children }) => {
   //fetch categories
   const getCategories = useCallback(async () => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/category", {
+      const response = await fetch(`${API_URL}/api/category`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -354,7 +330,7 @@ export const AppProvider = ({ children }) => {
           ? "?published=True"
           : "?published=True"; // Add this filter to exclude unpublished posts
         const response = await fetch(
-          `http://127.0.0.1:8000/api/search?category=${category}&${query}`,
+          `${API_URL}/api/search?category=${category}&${query}`,
           {
             method: "GET",
             headers: { "Content-Type": "application/json" },
@@ -375,7 +351,7 @@ export const AppProvider = ({ children }) => {
   const getComments = useCallback(async (postId) => {
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/post/${postId}/comments/?published=true` // Filter comments based on post published status
+        `${API_URL}/api/post/${postId}/comments/?published=true` // Filter comments based on post published status
       );
       const data = await response.json();
       setComment(data);
@@ -384,20 +360,17 @@ export const AppProvider = ({ children }) => {
     }
   }, []);
 
-  const fetchDrafts = async () => {
+  const fetchDrafts = useCallback(async () => {
     try {
-      const response = await fetch(
-        "http://127.0.0.1:8000/api/posts/?published=false",
-        {
-          headers: {
-            Authorization: `Bearer ${authTokens.access}`,
-          },
-        }
-      );
+      const response = await fetch(`${API_URL}/api/posts/?published=false`, {
+        headers: {
+          Authorization: `Bearer ${authTokens.access}`,
+        },
+      });
 
       if (response.ok) {
         const data = await response.json();
-        console.log("Fetched drafts:", data);
+        // Optionally: console.log("Fetched drafts:", data);
         return data;
       } else {
         console.error("Failed to fetch drafts:", await response.json());
@@ -405,51 +378,51 @@ export const AppProvider = ({ children }) => {
     } catch (error) {
       console.error("Error fetching drafts:", error);
     }
-  };
+  }, [authTokens?.access]);
 
   // ---------------------------------------------------POST-----------------------------------------------------------------------------------
-  let [newComment, setNewComment] = useState("");
+  // let [newComment, setNewComment] = useState("");
 
-  const createPost = async (postData) => {
-    let bodyToSend;
-    let headers = {
-      Authorization: `Bearer ${authTokens?.access}`,
-    };
+  const createPost = useCallback(
+    async (postData) => {
+      let bodyToSend;
+      let headers = {
+        Authorization: `Bearer ${authTokens?.access}`,
+      };
 
-    if (postData.img) {
-      // Send as multipart/form-data
-      bodyToSend = new FormData();
-      bodyToSend.append("title", postData.title);
-      bodyToSend.append("body", postData.body);
-      bodyToSend.append("category", postData.category);
-      bodyToSend.append("published", postData.published);
-      bodyToSend.append("img", postData.img);
-      // Don't set Content-Type manually; browser will do it
-    } else {
-      // Send as JSON
-      bodyToSend = JSON.stringify(postData);
-      headers["Content-Type"] = "application/json";
-    }
-
-    try {
-      const response = await fetch(`http://127.0.0.1:8000/api/post/create/`, {
-        method: "POST",
-        headers,
-        body: bodyToSend,
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
+      if (postData.img) {
+        bodyToSend = new FormData();
+        bodyToSend.append("title", postData.title);
+        bodyToSend.append("body", postData.body);
+        bodyToSend.append("category", postData.category);
+        bodyToSend.append("published", postData.published);
+        bodyToSend.append("img", postData.img);
+      } else {
+        bodyToSend = JSON.stringify(postData);
+        headers["Content-Type"] = "application/json";
       }
 
-      const data = await response.json();
-      console.log("Post created successfully:", data);
-      return data;
-    } catch (error) {
-      console.error("Error creating post:", error);
-      throw error;
-    }
-  };
+      try {
+        const response = await fetch(`${API_URL}/api/post/create/`, {
+          method: "POST",
+          headers,
+          body: bodyToSend,
+        });
+
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        // Optionally: console.log("Post created successfully:", data);
+        return data;
+      } catch (error) {
+        console.error("Error creating post:", error);
+        throw error;
+      }
+    },
+    [authTokens?.access]
+  );
 
   const updatePost = useCallback(
     async (updatedPost, postId) => {
@@ -463,16 +436,13 @@ export const AppProvider = ({ children }) => {
           formData.append("img", updatedPost.img);
         }
 
-        const response = await fetch(
-          `http://127.0.0.1:8000/api/post/${postId}/update/`,
-          {
-            method: "PUT",
-            headers: {
-              Authorization: `Bearer ${authTokens?.access}`,
-            },
-            body: formData,
-          }
-        );
+        const response = await fetch(`${API_URL}/api/post/${postId}/update/`, {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${authTokens?.access}`,
+          },
+          body: formData,
+        });
 
         if (!response.ok) {
           const errorData = await response.json();
@@ -491,7 +461,7 @@ export const AppProvider = ({ children }) => {
   const deletePost = useCallback(
     async (id) => {
       try {
-        await fetch(`http://127.0.0.1:8000/api/post/${id}/delete/`, {
+        await fetch(`${API_URL}/api/post/${id}/delete/`, {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
@@ -511,7 +481,7 @@ export const AppProvider = ({ children }) => {
     async (newBody, postId) => {
       try {
         const response = await fetch(
-          `http://127.0.0.1:8000/api/post/${postId}/comment/create/`,
+          `${API_URL}/api/post/${postId}/comment/create/`,
           {
             method: "POST",
             headers: {
@@ -527,14 +497,14 @@ export const AppProvider = ({ children }) => {
         console.error("Error creating comment:", error);
       }
     },
-    [newComment, authTokens]
+    [authTokens, getComments]
   );
 
   const updateComment = useCallback(
     async (postId, editingCommentId, updatedBody) => {
       try {
         const response = await fetch(
-          `http://127.0.0.1:8000/api/post/${postId}/comment/${editingCommentId}/update/`,
+          `${API_URL}/api/post/${postId}/comment/${editingCommentId}/update/`,
           {
             method: "PUT",
             headers: {
@@ -561,7 +531,7 @@ export const AppProvider = ({ children }) => {
     async (postId, id) => {
       try {
         const response = await fetch(
-          `http://127.0.0.1:8000/api/post/${postId}/comment/${id}/delete/`,
+          `${API_URL}/api/post/${postId}/comment/${id}/delete/`,
           {
             method: "DELETE",
             headers: {
@@ -580,7 +550,7 @@ export const AppProvider = ({ children }) => {
         console.error("Error deleting comment:", error);
       }
     },
-    [authTokens?.access, getPost, navigate]
+    [authTokens?.access, getPost, getComments]
   );
   const contextData = useMemo(
     () => ({
@@ -589,7 +559,6 @@ export const AppProvider = ({ children }) => {
       getAuthor,
       author,
       editBio,
-
       post,
       updatePost,
       getUserPostList,
@@ -613,7 +582,6 @@ export const AppProvider = ({ children }) => {
       uPost,
       getPostUpdate,
       updateAuthorImage,
-      postSeenByAnyone,
       getPublicUserPosts,
     }),
     [
@@ -623,14 +591,29 @@ export const AppProvider = ({ children }) => {
       author,
       editBio,
       post,
+      updatePost,
+      getUserPostList,
+      setUserPost,
+      setHasMorePost,
+      nextPostPage,
+      setNextPostPage,
       userPost,
+      getPost,
       comment,
+      getComments,
       searchResult,
       searchPost,
       categories,
-      uPost,
+      createPost,
+      deletePost,
       fetchDrafts,
-      nextPostPage,
+      createComment,
+      updateComment,
+      deleteComment,
+      uPost,
+      getPostUpdate,
+      updateAuthorImage,
+      getPublicUserPosts,
     ]
   );
   return (

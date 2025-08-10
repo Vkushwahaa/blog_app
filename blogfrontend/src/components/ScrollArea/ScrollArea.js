@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./ScrollArea.css";
+import { API_URL } from "../../config";
 
 const ScrollArea = () => {
   const [posts, setPosts] = useState([]);
@@ -15,8 +16,7 @@ const ScrollArea = () => {
     setLoading(true);
     try {
       const response = await fetch(
-        nextPage ||
-          `http://127.0.0.1:8000/api/post/?published=true&order_by=updated_at`
+        nextPage || `${API_URL}/api/post/?published=true&order_by=updated_at`
       );
       if (response.ok) {
         const data = await response.json();
