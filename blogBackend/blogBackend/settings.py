@@ -293,10 +293,9 @@ CORS_ALLOW_CREDENTIALS = True
 
 
 ALLOWED_HOSTS = [
-    "http://localhost:3000",  # local dev
+    "http://localhost:3000", 
     "blog-app-vinay-kushwahas-projects-7002aa5b.vercel.app",
-    "https://blog-q1o4jl0l4-vinay-kushwahas-projects-7002aa5b.vercel.app",  # Vercel preview URL
-    "https://blog-app-yourcustomdomain.com",  # your final domain (if you set one)
+    "https://blog-q1o4jl0l4-vinay-kushwahas-projects-7002aa5b.vercel.app",  
     "localhost-blog.onrender.com",
     "blog-app-six-ivory.vercel.app",
     "localhost",
